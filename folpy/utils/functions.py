@@ -2,7 +2,7 @@
 # -*- coding: utf8 -*-
 
 from itertools import product, chain
-from misc import indent, compose
+from .misc import indent, compose
 import copy
 import inspect
 
