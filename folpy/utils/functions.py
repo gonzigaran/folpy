@@ -2,9 +2,10 @@
 # -*- coding: utf8 -*-
 
 from itertools import product, chain
-from .misc import indent, compose
 import copy
 import inspect
+
+from .misc import indent, compose
 
 
 class Function(object):
@@ -136,7 +137,7 @@ class Function(object):
         else:
             if self.func:
                 # la aridad es la aridad de func
-                self.arityval = len(inspect.getargspec(self.func).args)
+                self.arityval = len(inspect.getfullargspec(self.func).args)
             else:
                 try:
                     self.arityval = len(list(self.dict.keys())[0])
