@@ -150,73 +150,6 @@ class Function(object):
         if not self.d_universe:
             self.d_universe = list(set(chain(*list(self.domain()))))
 
-    def copy(self):
-        """
-        Devuelve una copia de si mismo
-        """
-        result = copy.copy(self)
-        if self.func:
-            result.d_universe = list(result.d_universe)
-        else:
-            result.dict = self.dict.copy()
-        return result
-
-    def domain(self):
-        """
-        Un generador del dominio
-        """
-        if self.relation or self.func:
-            return product(self.d_universe, repeat=self.arity())
-        else:
-            return iter(self.dict.keys())
-
-    def image(self):
-        """
-        Un generador de la imagen
-        """
-        if self.func:
-            return iter(set(self.func(*t) for t in self.domain()))
-        else:
-            return iter(set(self.dict.values()))
-
-    def arity(self):
-        """
-        Devuelve la aridad de la funcion, revisando la 'primer' tupla del
-         diccionario.
-        """
-        return self.arityval
-
-    def map_in_place(self, f):
-        """
-        Funciona como un map, pero respeta la estructura de la matriz.
-        """
-        if self.func:
-            self.func = compose(f, self.func)
-        else:
-            self.dict = self.dict.copy()
-            for key in self.dict:
-                self.dict[key] = f(self.dict[key])
-
-    def restrict(self, subuniverse):
-        """
-        Restringe la funcion a un subconjunto.
-        """
-
-        result = self.copy()
-        if result.func:
-            result.d_universe = subuniverse
-        else:
-            for t in self.dict:
-                if any(e not in subuniverse for e in t):
-                    del result.dict[t]
-        return result
-
-    def vector_call(self, vector):
-        """
-        Aplica la funcion a un vector de elementos del dominio.
-        """
-        return type(vector)(list(map(self, vector)))
-
     def __call__(self, *args):
         if not len(args) == self.arity():
             raise ValueError(
@@ -290,6 +223,99 @@ class Function(object):
         else:
             return hash(frozenset(self.dict.items()))
 
+    def __repr__(self):
+        if self.relation:
+            result = "Relation(\n"
+            table = ["%s," % x for x in self.table()]
+        else:
+            if self.arity():
+                result = "Function(\n"
+                table = ["%s -> %s," %
+                         (x[:-1], x[-1]) for x in self.table()]
+            else:
+                result = "Constant(\n"
+                table = str(self.table()[0][0])
+
+        if len(table) > 10:
+            table = table[:5] + [".", ".", "."] + table[-5:]
+        table = indent("\n".join(table))
+
+        return result + table + ")"
+
+    def __iter__(self):
+        """
+        Vuelve a las funciones iterables a partir de su grafico
+        o a las relaciones directamente desde su conjunto de tuplas.
+        """
+        return iter(self.table())
+
+    def copy(self):
+        """
+        Devuelve una copia de si mismo
+        """
+        result = copy.copy(self)
+        if self.func:
+            result.d_universe = list(result.d_universe)
+        else:
+            result.dict = self.dict.copy()
+        return result
+
+    def domain(self):
+        """
+        Un generador del dominio
+        """
+        if self.relation or self.func:
+            return product(self.d_universe, repeat=self.arity())
+        else:
+            return iter(self.dict.keys())
+
+    def image(self):
+        """
+        Un generador de la imagen
+        """
+        if self.func:
+            return iter(set(self.func(*t) for t in self.domain()))
+        else:
+            return iter(set(self.dict.values()))
+
+    def arity(self):
+        """
+        Devuelve la aridad de la funcion, revisando la 'primer' tupla del
+         diccionario.
+        """
+        return self.arityval
+
+    def map_in_place(self, f):
+        """
+        Funciona como un map, pero respeta la estructura de la matriz.
+        """
+        if self.func:
+            self.func = compose(f, self.func)
+        else:
+            self.dict = self.dict.copy()
+            for key in self.dict:
+                self.dict[key] = f(self.dict[key])
+
+    def restrict(self, subuniverse):
+        """
+        Restringe la funcion a un subconjunto.
+        """
+
+        result = self.copy()
+        if result.func:
+            result.d_universe = subuniverse
+        else:
+            for t in self.dict:
+                if any(e not in subuniverse for e in t):
+                    del result.dict[t]
+        return result
+
+    def vector_call(self, vector):
+        """
+        Aplica la funcion a un vector de elementos del dominio.
+        """
+        return type(vector)(list(map(self, vector)))
+
     def table(self):
         """
         Devuelve una lista de listas con la tabla que representa a la
@@ -320,32 +346,6 @@ class Function(object):
             if matrix.item(*t) is not None:
                 result[t] = matrix.item(*t)
         return result
-
-    def __repr__(self):
-        if self.relation:
-            result = "Relation(\n"
-            table = ["%s," % x for x in self.table()]
-        else:
-            if self.arity():
-                result = "Function(\n"
-                table = ["%s -> %s," %
-                         (x[:-1], x[-1]) for x in self.table()]
-            else:
-                result = "Constant(\n"
-                table = str(self.table()[0][0])
-
-        if len(table) > 10:
-            table = table[:5] + [".", ".", "."] + table[-5:]
-        table = indent("\n".join(table))
-
-        return result + table + ")"
-
-    def __iter__(self):
-        """
-        Vuelve a las funciones iterables a partir de su grafico
-        o a las relaciones directamente desde su conjunto de tuplas.
-        """
-        return iter(self.table())
 
 
 if __name__ == "__main__":
