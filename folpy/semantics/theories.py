@@ -22,20 +22,6 @@ class Theory():
     def __repr__(self):
         """
         Display a first-order class in a way that can be parsed by Python
-
-        >>> from definability.first_order import fotheories
-        >>> print(fotheories.DLat)
-        Theory("Distributive lattices", axioms=[
-        "(x v y) v z = x v (y v z)",
-        "x v y = y v x",
-        "(x^y)^z = x^(y^z)",
-        "x^y = y^x",
-        "(x v y)^x = x",
-        "(x^y) v x = x",
-        "x^(y v z) = (x^y) v (x^z)"],
-        results=[
-        "x v (y^z) = (x v y)^(x v z)",
-        "((x v y)^(x v z))^(y v z) = ((x^y)v(x^z))v(y^z)"])
         """
         st = ('Theory(\"'
               + self.name

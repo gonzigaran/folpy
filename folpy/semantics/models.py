@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
-from itertools import chain
-from itertools import product
-import minion
+from itertools import chain, product
 
-from ..utils import indent, powerset
+from ..utils import indent, powerset, minion
 from .morphisms import Embedding, Homomorphism
 from .modelfunctions import (
     Relation,
@@ -78,13 +76,11 @@ class Model(object):
         """
         Hash para los modelos de primer orden
 
-        >>> from definability.examples.examples import *
-        >>> hash(retrombo)==hash(retrombo2)
+        >>> from folpy.examples.posets import *
+        >>> hash(gen_chain(2))==hash(gen_chain(3))
         False
-        >>> from definability.first_order.fotheories import DiGraph
-        >>> s=[hash(g) for g in DiGraph.find_models(3)]
-        >>> (len(s),len(set(s))) # nunca se repitio un hash
-        (103, 103)
+        >>> hash(gen_chain(2)*gen_chain(2))==hash(rhombus)
+        False
         """
         return hash(frozenset(chain([self.type],
                                     self.universe,
@@ -95,11 +91,9 @@ class Model(object):
         """
         Calcula el producto entre modelos
 
-        >>> from definability.examples.examples import *
-        >>> retcadena2.type = retrombo.type
-        >>> j=retcadena2*retrombo
-        >>> r=retcadena2**3
-        >>> bool(j.is_isomorphic(r,tiporet))
+        >>> from folpy.examples.posets import *
+        >>> c2 = gen_chain(2)
+        >>> bool(rhombus.is_isomorphic(c2*c2, rhombus.type))
         True
         """
         return Product([self, other])
@@ -108,12 +102,9 @@ class Model(object):
         """
         Calcula la potencia de un modelo
 
-        >>> from definability.examples.examples import *
-        >>> r=retcadena2**2
-        >>> bool(r.is_isomorphic(retrombo,tiporet))
-        True
-        >>> r=posetcadena2**2
-        >>> bool(r.is_isomorphic(posetrombo,tipoposet))
+        >>> from folpy.examples.posets import *
+        >>> c2 = gen_chain(2)
+        >>> bool((rhombus**2).is_isomorphic(c2**4, rhombus.type))
         True
         """
         return Product([self] * exponent)
@@ -123,12 +114,14 @@ class Model(object):
         """
         Genera todos los homomorfismos de este modelo a target, en el subtype.
 
-        >>> from definability.examples.examples import *
-        >>> len(retrombo.homomorphisms_to(retrombo,tiporet))
-        16
-        >>> len(retrombo.homomorphisms_to(rettestlinden,tiporet))
-        49
-        >>> len(rettestlinden.homomorphisms_to(retrombo,tiporet))
+        >>> from folpy.examples.posets import *
+        >>> c2 = gen_chain(2)
+        >>> c3 = gen_chain(3)
+        >>> len(c2.homomorphisms_to(c2,c2.type))
+        3
+        >>> len(c3.homomorphisms_to(c2,c2.type))
+        4
+        >>> len(rhombus.homomorphisms_to(rhombus,rhombus.type))
         36
         """
         return minion.homomorphisms(self, target, subtype, inj=inj,
@@ -192,13 +185,13 @@ class Model(object):
         y devuelve una lista con otros conjuntos que tambien hubieran
         generado el mismo subuniverso
 
-        >>> from definability.examples.examples import *
-        >>> retrombo.subuniverse([1],tiporet)
+        >>> from folpy.examples.lattices import *
+        >>> rhombus.subuniverse([1],rhombus.type)
         ([1], [[1]])
-        >>> retrombo.subuniverse([2,3],tiporet)[0]
+        >>> rhombus.subuniverse([1,2],rhombus.type)[0]
         [0, 1, 2, 3]
-        >>> retrombo.subuniverse([2,3],tiporet.subtype(["^"],[]))[0]
-        [0, 2, 3]
+        >>> rhombus.subuniverse([1,2],rhombus.type.subtype(["^"],[]))[0]
+        [1, 2, 3]
         """
         result = subset
         result.sort()
@@ -223,15 +216,9 @@ class Model(object):
         Generador que va devolviendo los subuniversos.
         Intencionalmente no filtra por isomorfismos.
 
-        >>> from definability.examples.examples import *
-        >>> list(retrombo.subuniverses(tiporet))#doctest: +ELLIPSIS
-        [[0, 1, 2, 3], [0, 1, 2], [0, 1, 3], ..., [0], [1], [2], [3]]
-        debe dar el conjunto de partes sin el vacio, porque no tiene ops
-        >>> list(posetrombo.subuniverses(tipoposet)) #doctest: +ELLIPSIS
-        [[0, 1, 2, 3], [0, 1, 2], [0, 1, 3], ..., [2, 3], [0], [1], [2], [3]]
-        debe dar todo entero, por las constantes
-        >>> list(retcadena2.subuniverses(tiporetacotado))
-        [[0, 1]]
+        >>> from folpy.examples.lattices import *
+        >>> len(list(rhombus.subuniverses(rhombus.type)))
+        12
         """
         result = []
         subsets = powerset(self.universe)
@@ -277,14 +264,12 @@ class Model(object):
         Devuelve una subestructura y un embedding.
         No devuelve las subestructuras cuyos universos estan en without.
 
-        >>> from definability.examples.examples import *
-        >>> len(list(retrombo.substructures(tiporet)))
+        >>> from folpy.examples.lattices import *
+        >>> len(list(rhombus.substructures(rhombus.type)))
         12
-        debe dar uno mas por el triangulo de arriba
-        >>> len(list(retrombo.substructures(tiporet.subtype(["v"],[]))))
+        >>> len(list(rhombus.substructures(rhombus.type.subtype(["v"],[]))))
         13
-        debe dar (2**cardinalidad)-1
-        >>> len(list(retrombo.substructures(tiporet.subtype([],[]))))
+        >>> len(list(rhombus.substructures(rhombus.type.subtype([],[]))))
         15
         """
         without = list(map(set, without))
@@ -301,25 +286,24 @@ class Model(object):
         Genera una relacion <= a partir de v
         Solo si no tiene ninguna relacion "<="
 
-        >>> from definability.examples.examples import retrombo
-        >>> del retrombo.relations["<="]
-        >>> retrombo.join_to_le()
-        >>> retrombo.relations["<="]
+        >>> from folpy.examples.lattices import *
+        >>> rhombus.join_to_le()
+        >>> rhombus.relations["<="]
         Relation(
           [0, 0],
           [0, 1],
           [0, 2],
           [0, 3],
           [1, 1],
-          [2, 1],
+          [1, 3],
           [2, 2],
-          [3, 1],
+          [2, 3],
           [3, 3],
         )
         """
         if "<=" not in self.relations:
             def leq(x, y):
-                return self.operations["v"](x, y) == y
+                return self.operations["v"](x, y) == x
             self.relations["<="] = Relation(leq, self.universe, arity=2)
 
     def diagram(self, c, s=0):

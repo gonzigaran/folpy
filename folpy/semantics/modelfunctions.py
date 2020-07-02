@@ -48,7 +48,7 @@ class Relation(Function):
     r"""
     Relacion de primer orden
 
-    >>> par = FO_Relation({(0,):1,(1,):0,(2,):1,(3,):0,(4,):1},range(4))
+    >>> par = Relation({(0,):1,(1,):0,(2,):1,(3,):0,(4,):1},range(4))
     >>> par(2)
     True
     >>> par(3)

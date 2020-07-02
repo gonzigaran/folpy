@@ -172,15 +172,15 @@ class Congruence(Partition):
     """
     Congruencia
 
-    >>> from definability import fotheories
+    >>> from folpy.examples.lattices import rhombus
     >>> rel = Congruence([(1, 1),(2, 2),(3, 3),(0, 0),(1, 3),(3, 1),
-    ... (0, 2),(2, 0)], fotheories.Lat.find_models(4)[0])
+    ... (0, 2),(2, 0)], rhombus)
     >>> rel(1, 3)
     True
     >>> rel(0, 3)
     False
-    >>> rel.table()
-    [[0, 0], [0, 2], [1, 1], [1, 3], [2, 0], [2, 2], [3, 1], [3, 3]]
+    >>> sorted(list(rel.table()))
+    [(0, 0), (0, 2), (1, 1), (1, 3), (2, 0), (2, 2), (3, 1), (3, 3)]
     """
 
     def __init__(self, table, algebra, check_operations=False):
@@ -278,14 +278,15 @@ class CongruenceSystem(object):
     Dado una lista de congruencias, una lista de elementos y un sigma generador
     del proyecto, genera el Sistema de Congruencias para ese proyectivo
 
-    >>> from definability import fotheories
+    >>> from folpy.examples.lattices import rhombus
     >>> C1 = Congruence([(1, 1),(2, 2),(3, 3),(0, 0),(1, 3),(3, 1),(0, 2),
-    ... (2, 0)], fotheories.Lat.find_models(4)[0])
-    >>> C2 = Congruence([(1, 1),(2, 2),(3, 3),(0, 0),(0, 3),(3, 0),(1, 2),
-    ... (2, 1)], fotheories.Lat.find_models(4)[0])
-    >>> CS = CongruenceSystem([C1, C2], [2, 3])
+    ... (2, 0)], rhombus)
+    >>> C2 = Congruence([(1, 1),(2, 2),(3, 3),(0, 0),(2, 3),(3, 2),(0, 1),
+    ... (1, 0)], rhombus)
+    >>> CS = CongruenceSystem([C1, C2], [2, 1])
     >>> CS.solutions()
-    {0}
+    frozenset({0})
+
     """
 
     def __init__(self, congruences, elements, sigma=None, check_system=False):

@@ -96,3 +96,10 @@ def fo_type_to_opsym(fo_type):
     for f in fo_type.operations:
         result.append(OpSym(f, fo_type.operations[f]))
     return result
+
+
+def variables(*lvars):
+    """
+    Declara variables de primer orden
+    """
+    return tuple(Variable(x) for x in lvars)

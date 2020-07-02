@@ -10,9 +10,9 @@ class Homomorphism(Function):
     """
     Homomorfismos
 
-    >>> from definability.examples import examples
-    >>> h = Homomorphism({(0,):1,(1,):1},examples.posetcadena2,
-    ... examples.posetcadena2,examples.posetcadena2.fo_type)
+    >>> from folpy.examples.posets import gen_chain
+    >>> c2 = gen_chain(2)
+    >>> h = Homomorphism({(0,):1,(1,):1}, c2, c2, c2.type)
     >>> print(h)
     Homeomorphism(
       [0] -> 1,
@@ -131,25 +131,20 @@ class Homomorphism(Function):
         Diremos que 𝛾  preserva a R si para todo (a₁,...,aₙ) ∈ R∩Dⁿ
         se tiene que (𝛾(a₁),...,𝛾(aₙ)) ∈ R.
 
-        >>> from definability.examples.examples import *
-        >>> retrombo.is_homomorphic_image(retrombo, tiporet)
+        >>> from folpy.examples.posets import *
+        >>> rhombus.is_homomorphic_image(rhombus, rhombus.type)
         Homeomorphism(
           [0] -> 0,
           [1] -> 0,
           [2] -> 0,
           [3] -> 0,
         ,
-          FO_Type({'^': 2, 'v': 2},{})
+          Type({},{'<=': 2})
         ,
         )
-
-        >>> h=retrombo.is_homomorphic_image(retrombo, tiporet)
-
+        >>> h = rhombus.is_homomorphic_image(rhombus, rhombus.type)
         >>> h.preserves_relation("<=")
         True
-
-        >>> h.preserves_relation("P")
-        False
         """
 
         if rel in self.subtype.relations:
@@ -203,28 +198,26 @@ class Homomorphism(Function):
         Revisa que el homomorfismo tambien sea homomorfismo para el supertipo.
 
         Revisa preservacion de las relaciones que tiene supertype, que no
-         tiene el morfismo en su tipo.
+        tiene el morfismo en su tipo.
         Si preserva el tipo, se cambia de tipo a ese.
 
-        >>> from definability.examples.examples import *
-        >>> retrombo.is_homomorphic_image(retrombo, tiporet)
+        >>> from folpy.examples.lattices import M3, ret_type
+        >>> from folpy.examples.posets import poset_type
+        >>> M3.is_homomorphic_image(M3, ret_type)
         Homeomorphism(
           [0] -> 0,
           [1] -> 0,
           [2] -> 0,
           [3] -> 0,
+          [4] -> 0,
         ,
-          FO_Type({'^': 2, 'v': 2},{})
+          AlgebraicType({'^': 2, 'v': 2})
         ,
         )
-
-        >>> h=retrombo.is_homomorphic_image(retrombo, tiporet)
-
-        >>> h.preserves_type(tiporet+tipoposet)
+        >>> h = M3.is_homomorphic_image(M3, ret_type)
+        >>> M3.join_to_le()
+        >>> h.preserves_type(ret_type + poset_type)
         True
-
-        >>> h.preserves_type(tiporet+tipotest)
-        False
         """
         checktype = supertype - self.subtype
 
@@ -292,9 +285,9 @@ class Embedding(Homomorphism):
     """
     Embeddings
 
-    >>> from definability.examples import examples
-    >>> h = Embedding({(0,):1,(1,):1},examples.posetcadena2,
-    ... examples.posetcadena2,examples.posetcadena2.fo_type)
+    >>> from folpy.examples.posets import gen_chain
+    >>> c2 = gen_chain(2)
+    >>> h = Embedding({(0,):1,(1,):1}, c2, c2, c2.type)
     >>> print(h)
     Autoembedding(
       [0] -> 1,
@@ -344,15 +337,15 @@ class Isomorphism(Embedding):
     """
     Isomorfismos
 
-    >>> from definability.examples import examples
-    >>> h = Isomorphism({(0,):1,(1,):1},examples.posetcadena2,
-    ... examples.posetcadena2,examples.posetcadena2.fo_type)
+    >>> from folpy.examples.posets import gen_chain
+    >>> c2 = gen_chain(2)
+    >>> h = Isomorphism({(0,):1,(1,):1}, c2, c2, c2.type)
     >>> print(h)
     Automorphism(
       [0] -> 1,
       [1] -> 1,
     ,
-      FO_Type({},{'<=': 2})
+      Type({},{'<=': 2})
     ,
       Injective,
       Surjective,

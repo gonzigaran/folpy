@@ -6,4 +6,4 @@ from .classes import Quasivariety
 from .congruences import Congruence, CongruenceSystem
 from .models import Model, Submodel, Product
 from .morphisms import Homomorphism, Embedding, Isomorphism
-from .theries import Theory
+from .theories import Theory

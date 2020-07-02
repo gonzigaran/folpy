@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
+from itertools import chain
+
 from ..utils import indent
 from .models import Model, Submodel, Product
 from .morphisms import Homomorphism
@@ -26,6 +28,23 @@ class Algebra(Model):
             result += indent(repr(self.universe) + ",\n")
             result += indent(repr(self.operations))
             return result + ")"
+
+    def __hash__(self):
+        """
+        Hash para los modelos de primer orden
+
+        >>> from folpy.examples.lattices import *
+        >>> hash(gen_chain(2))==hash(gen_chain(3))
+        False
+        >>> hash(gen_chain(2)*gen_chain(2))==hash(rhombus)
+        False
+        """
+        algebra_chain = chain(
+            [self.type],
+            self.universe,
+            self.operations.items()
+            )
+        return hash(frozenset(algebra_chain))
 
     def __mul__(self, other):
         """
@@ -105,6 +124,18 @@ class Algebra(Model):
                     congruences.append(con)
         return congruences
 
+    def restrict(self, subuniverse, subtype):
+        """
+        Devuelve la restriccion del algebra al subuniverso que se supone
+        que es cerrado en en subtype
+        """
+        return Subalgebra(subtype, subuniverse,
+                          {
+                              op: self.operations[op].restrict(subuniverse)
+                              for op in self.operations
+                          },
+                          self)
+
 
 class Subalgebra(Submodel, Algebra):
     """
@@ -149,7 +180,7 @@ class AlgebraProduct(Product, Algebra):
 
     def __init__(self, factors):
         for factor in factors:
-            assert isinstance(factor, Algebra), factor + " no es un algebra"
+            assert isinstance(factor, Algebra), str(factor) + " no es algebra"
         super().__init__(factors)
 
 

@@ -5,7 +5,7 @@
 Modulo con ejemplos de posets
 """
 
-from ..semantics.model import Model
+from ..semantics import Model
 from ..syntax.types import Type
 from ..semantics.modelfunctions import Relation, Relation_decorator
 
@@ -33,7 +33,7 @@ rhombus = Model(
         (3, 1): 1,
         (3, 2): 0,
         (3, 3): 1
-        })},
+        }, d_universe=list(range(4)))},
     name="Rhombus Poset"
 )
 
@@ -67,7 +67,7 @@ M3 = Model(
         (4, 2): 0,
         (4, 3): 0,
         (4, 4): 1
-        })},
+        }, d_universe=list(range(5)))},
     name="M3 Poset"
 )
 

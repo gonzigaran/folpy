@@ -219,7 +219,7 @@ class Function(object):
         False
         """
         if self.func:
-            return hash(frozenset([self.d_universe, self.func]))
+            return hash(frozenset(chain(self.d_universe, [self.func])))
         else:
             return hash(frozenset(self.dict.items()))
 

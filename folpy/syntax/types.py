@@ -12,22 +12,22 @@ class Type(object):
     operaciones y el segundo para las relaciones.
     Las constantes se consideran como operaciones 0-arias.
 
-    >>> t = FO_Type({"+":2},{"<":2})
+    >>> t = Type({"+":2},{"<":2})
     >>> t
-    FO_Type({'+': 2},{'<': 2})
+    Type({'+': 2},{'<': 2})
     >>> st = t.subtype(["+"],[])
     >>> st
-    FO_Type({'+': 2},{})
+    Type({'+': 2},{})
     >>> st.is_subtype_of(t)
     True
     >>> suma = Type({'+': 2},{'<': 2}) + Type({'-': 2},{'<=': 2})
-    >>> set(suma.operations.keys()) == {"+","-"},
-    ... set(suma.relations.keys()) == {"<","<="}
+    >>> (set(suma.operations.keys()) == {"+","-"},
+    ... set(suma.relations.keys()) == {"<","<="})
     (True, True)
     >>> resta = Type({'+': 2, '-': 2},
     ... {'<=': 2, '<': 2}) - Type({'-': 2},{'<=': 2})
-    >>> set(resta.operations.keys()) == {"+"},
-    ... set(resta.relations.keys()) == {"<"}
+    >>> (set(resta.operations.keys()) == {"+"},
+    ... set(resta.relations.keys()) == {"<"})
     (True, True)
     """
 
@@ -82,8 +82,8 @@ class Type(object):
         """
         Hash de los tipos
 
-        >>> t1 = FO_Type({"+":2},{"<":2})
-        >>> t2 = FO_Type({"-":2,"+":2},{"<":2})
+        >>> t1 = Type({"+":2}, {"<":2})
+        >>> t2 = Type({"-":2,"+":2}, {"<":2})
         >>> hash(t1)==hash(t2)
         False
         >>> hash(t1)==hash(t2.subtype(["+"],["<"]))
@@ -118,7 +118,7 @@ class Type(object):
         return result
 
 
-class AlgebraicType(object):
+class AlgebraicType(Type):
     """
     Maneja tipos algebráicos de primer orden, sin nombres de relaciones
     """

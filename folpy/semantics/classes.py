@@ -9,8 +9,6 @@ from .congruences import sup_proj
 from .modelfunctions import Operation, Constant
 from .algebras import Algebra, AlgebraProduct
 
-import check_isos
-
 
 class Quasivariety(object):
     """
@@ -24,7 +22,6 @@ class Quasivariety(object):
                  el mismo tipo"
         self.generators = generators
         self.name = name
-        self.rsi = False
 
     def rsi(self):
         """
@@ -32,8 +29,9 @@ class Quasivariety(object):
          relativamente subdirectamente irreducibles para la cuasivariedad
          generada.
 
-        >>> from folpy.examples.lattices import gen_lat
-        >>> len(Quasivariety([gen_lat(2), gen_lat(3), gen_lat(4)]]).rsi())
+        >>> from folpy.examples.lattices import gen_chain
+        >>> Q = Quasivariety([gen_chain(2), gen_chain(3), gen_chain(4)])
+        >>> len(Q.rsi())
         1
         """
 
@@ -50,8 +48,10 @@ class Quasivariety(object):
             t = False
             for j in range(0, len(sub)):
                 if i != j:
-                    for f in sub[i].homomorphisms_to(sub[j], self.type,
-                                                     surj=True):
+                    homomorphisms = sub[i].homomorphisms_to(sub[j],
+                                                            self.type,
+                                                            surj=True)
+                    for f in homomorphisms:
                         ker = ker & {tuple(t) for t in f.kernel().table()}
                         if ker == mincon:
                             sub.pop(i)
@@ -66,10 +66,10 @@ class Quasivariety(object):
         """
         Dada un algebra ´a´, se fija si ´a´ pertenece a la cuasivariedad
 
-        >>> from definability.first_order.fotheories import Lat
-        >>> from definability.functions.morphisms import Homomorphism
-        >>> type(Quasivariety(list(Lat.find_models(5))[0:3])
-        ... .contains(list(Lat.find_models(5))[3])) == Homomorphism
+        >>> from folpy.examples.lattices import gen_chain, M3, rhombus
+        >>> from folpy.semantics import Homomorphism
+        >>> Q = Quasivariety([gen_chain(2), gen_chain(3), gen_chain(4)])
+        >>> type(Q.contains(rhombus)) == Homomorphism
         True
         """
         if type(self.rsi) == list:
@@ -151,6 +151,13 @@ class Quasivariety(object):
                     )}, {})
             return lat
         return "El álgebra no pertenece a Q"
+
+
+def check_isos(a, s, subtype):
+    for b in filter(lambda x: len(a) == len(x), s):
+        iso = a.is_isomorphic(b, subtype)
+        if iso:
+            return iso
 
 
 if __name__ == "__main__":

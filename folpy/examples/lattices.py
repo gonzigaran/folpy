@@ -5,16 +5,16 @@
 Modulo con ejemplos de reticulados
 """
 
-from ..semantics.algebra import Algebra
+from ..semantics import Algebra
 from ..syntax.types import AlgebraicType
 from ..semantics.modelfunctions import Operation, Operation_decorator
 
 
-ret_type = AlgebraicType({"^": 2, "v": 2}, {})
+ret_type = AlgebraicType({"^": 2, "v": 2})
 
 rhombus = Algebra(
     ret_type,
-    list(range(3)),
+    list(range(4)),
     {
         "^": Operation({(0, 0): 0,
                         (0, 1): 1,
@@ -54,7 +54,7 @@ rhombus = Algebra(
 
 M3 = Algebra(
     ret_type,
-    list(range(4)),
+    list(range(5)),
     {
         "^": Operation({(0, 0): 0,
                         (0, 1): 1,
@@ -112,7 +112,7 @@ M3 = Algebra(
 
 M5 = Algebra(
     ret_type,
-    list(range(4)),
+    list(range(5)),
     {
         "^": Operation({(0, 0): 0,
                         (0, 1): 1,
@@ -185,5 +185,4 @@ def gen_chain(n):
     return Algebra(ret_type,
                    universe,
                    operations,
-                   {},
                    name="Chain Lattice %s" % n)

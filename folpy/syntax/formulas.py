@@ -11,6 +11,7 @@ class Formula(object):
     Clase general de las formulas de primer orden
 
     declaracion de variables de primer orden
+    >>> from .terms import variables, OpSym
     >>> x,y,z = variables("x","y","z")
 
     >>> R = RelSym("R",2) # declaro una relacion R de aridad 2
@@ -364,12 +365,13 @@ def atomics(relations, terms, equality=True):
     Genera todas las formulas atomicas con relations
     de arity variables libres
 
+    >>> from .terms import variables
     >>> R = RelSym("R",2)
     >>> vs = variables(*range(2))
     >>> list(atomics([R],vs))
-    [R(x₀, x₀), R(x₀, x₁), R(x₁, x₀), R(x₁, x₁), x₀ == x₁]
+    [R(x0, x0), R(x0, x1), R(x1, x0), R(x1, x1), x0 == x1]
     >>> list(atomics([R],vs,equality=False))
-    [R(x₀, x₀), R(x₀, x₁), R(x₁, x₀), R(x₁, x₁)]
+    [R(x0, x0), R(x0, x1), R(x1, x0), R(x1, x1)]
     """
     terms
     for r in relations:
