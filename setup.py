@@ -14,7 +14,6 @@ setuptools.setup(
     long_description_content_type='text/markdown',
     url="https://github.com/gonzigaran/folpy",
     packages=['folpy'],
-    package_dir={'folpy': 'folpy'},
     package_data={'folpy': ['utils/minion/minion']},
     classifiers=[
         "Programming Language :: Python :: 3",
