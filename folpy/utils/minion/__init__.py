@@ -2,7 +2,14 @@
 # -*- coding: utf8 -*-
 
 from .minion import (
-    is_isomorphic,
+    MinionSol,
+    MorphMinionSol,
+    ParallelMorphMinionSol,
     homomorphisms,
-    is_homomorphic_image
+    embeddings,
+    isomorphisms,
+    is_homomorphic_image,
+    is_substructure,
+    is_isomorphic,
+    is_isomorphic_to_any
 )
