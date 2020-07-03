@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="folpy",
-    version="0.1",
+    version="0.1.1",
     author="Gonzalo Zigarán",
     author_email="gjzigaran@gmail.com",
     description="First Order Logic Python Library",
