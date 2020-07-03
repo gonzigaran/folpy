@@ -13,7 +13,9 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url="https://github.com/gonzigaran/folpy",
-    packages=setuptools.find_packages(),
+    packages=['folpy'],
+    package_dir={'folpy': 'folpy'},
+    package_data={'folpy': ['utils/minion/minion']},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
