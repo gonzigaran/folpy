@@ -110,7 +110,7 @@ M3 = Algebra(
     name="Lattice M3"
 )
 
-M5 = Algebra(
+N5 = Algebra(
     ret_type,
     list(range(5)),
     {
