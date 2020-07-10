@@ -17,7 +17,7 @@ class Algebra(Model):
     """
 
     def __init__(self, fo_type, universe, operations, name=""):
-        super().__init__(fo_type, universe, operations, {})
+        super().__init__(fo_type, universe, operations, {}, name)
 
     def __repr__(self):
         if self.name:
@@ -112,6 +112,16 @@ class Algebra(Model):
         Dado un conjunto de álgebras ´factors´, devuelve todas las congruencias
         tal que el cociente de ´self´ con esas congruencias es isomorfo a algún
         factor
+
+        >>> from folpy.examples.lattices import gen_chain, rhombus, N5
+        >>> c2 = gen_chain(2)
+        >>> c3 = gen_chain(3)
+        >>> len(N5.congruences_in([c2,c3,rhombus]))
+        3
+        >>> len(N5.congruences_in([rhombus]))
+        1
+        >>> len(N5.congruences_in([c2]))
+        2
         """
         congruences = []
         for factor in factors:
@@ -149,7 +159,7 @@ class Subalgebra(Submodel, Algebra):
 
     def __repr__(self):
         result = "Subalgebra(\n"
-        result += indent(repr(self.fo_type) + ",\n")
+        result += indent(repr(self.type) + ",\n")
         result += indent(repr(self.universe) + ",\n")
         result += indent(repr(self.operations) + ",\n")
         result += indent("supermodel= " + repr(self.supermodel) + "\n")
@@ -219,7 +229,7 @@ class Quotient(Algebra):
 
     def __repr__(self):
         result = "Quotient(\n"
-        result += indent(repr(self.fo_type) + ",\n")
+        result += indent(repr(self.type) + ",\n")
         result += indent(repr(self.universe) + ",\n")
         result += indent(repr(self.operations) + ",\n")
         result += indent("congruence= " + repr(self.congruence) + "\n")
