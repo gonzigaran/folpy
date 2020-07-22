@@ -346,6 +346,38 @@ class Model(object):
 
         return (Model(self.type, universe, operations, relations), translation)
 
+    def to_file(self, path):
+        """
+        Genera archivo de texto con la información del modelo para poder
+        cargarlo con el Parser después
+        """
+        if not path.endswith('.model'):
+            path = path + ".model"
+        file_text = ''
+        file_text += ' '.join([str(x) for x in self.universe])
+        file_text += '\n\n'
+        for operation_name in self.operations:
+            operation = self.operations[operation_name]
+            file_text += '%s %s' % (operation_name, operation.arity())
+            file_text += '\n'
+            for x in operation.table():
+                file_text += ' '.join([str(a) for a in x])
+                file_text += '\n'
+            file_text += '\n'
+        for relation_name in self.relations:
+            relation = self.relations[relation_name]
+            table = relation.table()
+            file_text += '%s %s %s' % (relation_name,
+                                       len(table),
+                                       relation.arity())
+            file_text += '\n'
+            for x in table:
+                file_text += ' '.join([str(a) for a in x])
+                file_text += '\n'
+            file_text += '\n'
+        with open(path, "w") as open_file:
+            open_file.write(file_text)
+
 
 class Submodel(Model):
 
