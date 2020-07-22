@@ -24,6 +24,10 @@ class Parser(object):
     """
     Parse a model
 
+    TODO verbose
+    TODO preprocess
+    TODO name
+
     >>> from folpy.semantics import Algebra, Model
     >>> p = Parser("folpy/utils/parser/example.model")
     >>> type(p.parse()) == Model

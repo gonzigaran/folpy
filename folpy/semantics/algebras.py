@@ -149,7 +149,7 @@ class Subalgebra(Submodel, Algebra):
 
     def __repr__(self):
         result = "Subalgebra(\n"
-        result += indent(repr(self.fo_type) + ",\n")
+        result += indent(repr(self.type) + ",\n")
         result += indent(repr(self.universe) + ",\n")
         result += indent(repr(self.operations) + ",\n")
         result += indent("supermodel= " + repr(self.supermodel) + "\n")
@@ -219,7 +219,7 @@ class Quotient(Algebra):
 
     def __repr__(self):
         result = "Quotient(\n"
-        result += indent(repr(self.fo_type) + ",\n")
+        result += indent(repr(self.type) + ",\n")
         result += indent(repr(self.universe) + ",\n")
         result += indent(repr(self.operations) + ",\n")
         result += indent("congruence= " + repr(self.congruence) + "\n")
