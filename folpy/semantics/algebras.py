@@ -124,11 +124,13 @@ class Algebra(Model):
                     congruences.append(con)
         return congruences
 
-    def restrict(self, subuniverse, subtype):
+    def restrict(self, subuniverse, subtype=None):
         """
         Devuelve la restriccion del algebra al subuniverso que se supone
         que es cerrado en en subtype
         """
+        if not subtype:
+            subtype = self.type
         return Subalgebra(subtype, subuniverse,
                           {
                               op: self.operations[op].restrict(subuniverse)

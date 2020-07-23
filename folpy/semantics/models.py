@@ -109,7 +109,7 @@ class Model(object):
         """
         return Product([self] * exponent)
 
-    def homomorphisms_to(self, target, subtype, inj=None, surj=None,
+    def homomorphisms_to(self, target, subtype=None, inj=None, surj=None,
                          without=[]):
         """
         Genera todos los homomorfismos de este modelo a target, en el subtype.
@@ -124,62 +124,78 @@ class Model(object):
         >>> len(rhombus.homomorphisms_to(rhombus,rhombus.type))
         36
         """
+        if not subtype:
+            subtype = self.type
         return minion.homomorphisms(self, target, subtype, inj=inj,
                                     surj=surj, without=without)
 
-    def embeddings_to(self, target, subtype, without=[]):
+    def embeddings_to(self, target, subtype=None, without=[]):
         """
         Genera todos los embeddings de este modelo a target, en el subtype.
         """
+        if not subtype:
+            subtype = self.type
         return minion.embeddings(self, target, subtype, without=without)
 
-    def automorphisms(self, subtype, without=[]):
+    def automorphisms(self, subtype=None, without=[]):
         """
         Genera todos los automorfismos de este modelo, en el subtype.
         """
+        if not subtype:
+            subtype = self.type
         return self.isomorphisms_to(self, subtype, without=without)
 
-    def isomorphisms_to(self, target, subtype, without=[]):
+    def isomorphisms_to(self, target, subtype=None, without=[]):
         """
         Genera todos los isomorfismos de este modelo a target, en el subtype.
         """
+        if not subtype:
+            subtype = self.type
         return minion.isomorphisms(self, target, subtype, without=without)
 
-    def is_homomorphic_image(self, target, subtype, without=[]):
+    def is_homomorphic_image(self, target, subtype=None, without=[]):
         """
         Si existe, devuelve un homomorfismo de este modelo a target,
         en el subtype;
         Si no, devuelve False
         """
+        if not subtype:
+            subtype = self.type
         return minion.is_homomorphic_image(self, target, subtype,
                                            without=without)
 
-    def is_substructure(self, target, subtype, without=[]):
+    def is_substructure(self, target, subtype=None, without=[]):
         """
         Si existe, devuelve un embedding de este modelo a target,
         en el subtype;
         Si no, devuelve False
         """
+        if not subtype:
+            subtype = self.type
         return minion.is_substructure(self, target, subtype, without=without)
 
-    def is_isomorphic(self, target, subtype, without=[]):
+    def is_isomorphic(self, target, subtype=None, without=[]):
         """
         Si existe, devuelve un isomorfismo de este modelo a target,
         en el subtype;
         Si no, devuelve False
         """
+        if not subtype:
+            subtype = self.type
         return minion.is_isomorphic(self, target, subtype, without=without)
 
-    def is_isomorphic_to_any(self, targets, subtype, without=[]):
+    def is_isomorphic_to_any(self, targets, subtype=None, without=[]):
         """
         Si lo es, devuelve el primer isomorfismo encontrado desde este
         modelo a alguno en targets, en el subtype;
         Si no, devuelve False
         """
+        if not subtype:
+            subtype = self.type
         return minion.is_isomorphic_to_any(self, targets, subtype,
                                            without=without)
 
-    def subuniverse(self, subset, subtype):
+    def subuniverse(self, subset, subtype=None):
         """
         Devuelve el subuniverso generado por subset para el subtype
         y devuelve una lista con otros conjuntos que tambien hubieran
@@ -193,6 +209,8 @@ class Model(object):
         >>> rhombus.subuniverse([1,2],rhombus.type.subtype(["^"],[]))[0]
         [1, 2, 3]
         """
+        if not subtype:
+            subtype = self.type
         result = subset
         result.sort()
         partials = [list(subset)]
@@ -210,7 +228,7 @@ class Model(object):
 
         return (result, partials)
 
-    def subuniverses(self, subtype):
+    def subuniverses(self, subtype=None):
         """
         NO DEVUELVE EL SUBUNIVERSO VACIO
         Generador que va devolviendo los subuniversos.
@@ -220,6 +238,8 @@ class Model(object):
         >>> len(list(rhombus.subuniverses(rhombus.type)))
         12
         """
+        if not subtype:
+            subtype = self.type
         result = []
         subsets = powerset(self.universe)
         checked = [[]]
@@ -232,11 +252,13 @@ class Model(object):
                     result.append(subuniverse)
                     yield subuniverse
 
-    def restrict(self, subuniverse, subtype):
+    def restrict(self, subuniverse, subtype=None):
         """
         Devuelve la restriccion del modelo al subuniverso que se supone
         que es cerrado en en subtype
         """
+        if not subtype:
+            subtype = self.type
         return Submodel(subtype, subuniverse,
                         {
                             op: self.operations[op].restrict(subuniverse)
@@ -248,16 +270,18 @@ class Model(object):
                         },
                         self)
 
-    def substructure(self, subuniverse, subtype):
+    def substructure(self, subuniverse, subtype=None):
         """
         Devuelve una subestructura y un embedding.
         """
+        if not subtype:
+            subtype = self.type
         substructure = self.restrict(subuniverse, subtype)
         emb = Embedding(
             {(k,): k for k in subuniverse}, substructure, self, subtype)
         return (emb, substructure)
 
-    def substructures(self, subtype, without=[]):
+    def substructures(self, subtype=None, without=[]):
         """
         Generador que va devolviendo las subestructuras.
         Intencionalmente no filtra por isomorfismos.
@@ -272,6 +296,8 @@ class Model(object):
         >>> len(list(rhombus.substructures(rhombus.type.subtype([],[]))))
         15
         """
+        if not subtype:
+            subtype = self.type
         without = list(map(set, without))
         for sub in self.subuniverses(subtype):
             if set(sub) not in without:
