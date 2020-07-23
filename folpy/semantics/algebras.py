@@ -112,11 +112,42 @@ class Algebra(Model):
         Dado un conjunto de álgebras ´factors´, devuelve todas las congruencias
         tal que el cociente de ´self´ con esas congruencias es isomorfo a algún
         factor
+
+        >>> from folpy.examples.lattices import gen_chain, rhombus
+        >>> len(rhombus.congruences_in([gen_chain(2)]))
+        2
         """
         congruences = []
         for factor in factors:
             homomorphisms = self.homomorphisms_to(factor,
-                                                  factor.type,
+                                                  surj=True)
+            for homomorphism in homomorphisms:
+                con = homomorphism.kernel()
+                if con not in congruences:
+                    congruences.append(con)
+        return congruences
+
+    def congruences(self):
+        """
+        Devuelve todas las congruencias del algebra
+
+        TODO ver si hay una forma de implementar esta funcion sin generar todas
+        las subalgebras
+
+        >>> from folpy.examples.lattices import gen_chain, rhombus
+        >>> len(gen_chain(2).congruences())
+        2
+        >>> len(gen_chain(3).congruences())
+        4
+        >>> len(gen_chain(4).congruences())
+        8
+        >>> len(rhombus.congruences())
+        4
+        """
+        congruences = [self.mincon(), self.maxcon()]
+        subalgebras = self.substructures()
+        for embedding, subalgebra in subalgebras:
+            homomorphisms = self.homomorphisms_to(subalgebra,
                                                   surj=True)
             for homomorphism in homomorphisms:
                 con = homomorphism.kernel()
