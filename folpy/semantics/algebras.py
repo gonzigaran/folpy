@@ -113,20 +113,13 @@ class Algebra(Model):
         tal que el cociente de ´self´ con esas congruencias es isomorfo a algún
         factor
 
-        >>> from folpy.examples.lattices import gen_chain, rhombus, N5
-        >>> c2 = gen_chain(2)
-        >>> c3 = gen_chain(3)
-        >>> len(N5.congruences_in([c2,c3,rhombus]))
-        3
-        >>> len(N5.congruences_in([rhombus]))
-        1
-        >>> len(N5.congruences_in([c2]))
+        >>> from folpy.examples.lattices import gen_chain, rhombus
+        >>> len(rhombus.congruences_in([gen_chain(2)]))
         2
         """
         congruences = []
         for factor in factors:
             homomorphisms = self.homomorphisms_to(factor,
-                                                  factor.type,
                                                   surj=True)
             for homomorphism in homomorphisms:
                 con = homomorphism.kernel()
@@ -134,11 +127,41 @@ class Algebra(Model):
                     congruences.append(con)
         return congruences
 
-    def restrict(self, subuniverse, subtype):
+    def congruences(self):
+        """
+        Devuelve todas las congruencias del algebra
+
+        TODO ver si hay una forma de implementar esta funcion sin generar todas
+        las subalgebras
+
+        >>> from folpy.examples.lattices import gen_chain, rhombus
+        >>> len(gen_chain(2).congruences())
+        2
+        >>> len(gen_chain(3).congruences())
+        4
+        >>> len(gen_chain(4).congruences())
+        8
+        >>> len(rhombus.congruences())
+        4
+        """
+        congruences = [self.mincon(), self.maxcon()]
+        subalgebras = self.substructures()
+        for embedding, subalgebra in subalgebras:
+            homomorphisms = self.homomorphisms_to(subalgebra,
+                                                  surj=True)
+            for homomorphism in homomorphisms:
+                con = homomorphism.kernel()
+                if con not in congruences:
+                    congruences.append(con)
+        return congruences
+
+    def restrict(self, subuniverse, subtype=None):
         """
         Devuelve la restriccion del algebra al subuniverso que se supone
         que es cerrado en en subtype
         """
+        if not subtype:
+            subtype = self.type
         return Subalgebra(subtype, subuniverse,
                           {
                               op: self.operations[op].restrict(subuniverse)
