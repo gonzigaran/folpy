@@ -372,6 +372,16 @@ class Model(object):
 
         return (Model(self.type, universe, operations, relations), translation)
 
+    def is_continous(self):
+        """
+        Decide si el universo es de la forma [0..n]
+
+        >>> from folpy.examples.lattices import *
+        >>> rhombus.is_continous()
+        True
+        """
+        return self.universe == list(range(len(self.universe)))
+
     def to_file(self, path):
         """
         Genera archivo de texto con la información del modelo para poder
