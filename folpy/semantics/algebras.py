@@ -17,7 +17,7 @@ class Algebra(Model):
     """
 
     def __init__(self, fo_type, universe, operations, name=""):
-        super().__init__(fo_type, universe, operations, {})
+        super().__init__(fo_type, universe, operations, {}, name)
 
     def __repr__(self):
         if self.name:
