@@ -44,6 +44,48 @@ class Lattice(Algebra):
         """
         return LatticeProduct([self] * exponent)
 
+    def supreme(self, a, b):
+        """
+        devuelve el supremo de a y b para el reticulado
+        """
+        return self.operations['^'](a, b)
+
+    def infimum(self, a, b):
+        """
+        devuelve el infimo de a y b para el reticulado
+        """
+        return self.operations['v'](a, b)
+
+    def gt(self, a, b):
+        """
+        devuelve la relación >= para los elementos a y b del reticulado
+        """
+        return self.supreme(a, b) == a
+
+    def lt(self, a, b):
+        """
+        devuelve la relación <= para los elementos a y b del reticulado
+        """
+        return self.infimum(a, b) == a
+
+    def max(self):
+        """
+        devuelve el maximo del reticulado
+        """
+        max_element = self.universe[0]
+        for x in self.universe:
+            max_element = self.supreme(x, max_element)
+        return max_element
+
+    def min(self):
+        """
+        devuelve el minimo del reticulado
+        """
+        min_element = self.universe[0]
+        for x in self.universe:
+            min_element = self.infimum(x, min_element)
+        return min_element
+
     def continous(self):
         """
         Devuelve un álgebra isomorfa pero de universo [0..n]
