@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
+from itertools import combinations_with_replacement
+
 from ..utils import indent
 from ..syntax.types import AlgebraicType
 
@@ -120,7 +122,16 @@ class Lattice(Algebra):
         """
         if self.distributive:
             return self.distributive
-        return "ToDo"
+        distributive = True
+        for x, y, z in combinations_with_replacement(self.universe, r=3):
+            condition1 = self.infimum(x, self.supreme(y, z))
+            condition2 = self.supreme(self.infimum(x, y), self.infimum(x, z))
+            condition = condition1 == condition2
+            distributive = distributive and condition
+            if not distributive:
+                break
+        self.distributive = distributive
+        return distributive
 
 
 class Sublattice(Subalgebra, Lattice):
