@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
-from itertools import combinations_with_replacement
+from itertools import product
 
 from ..utils import indent
 from ..syntax.types import AlgebraicType
@@ -73,6 +73,14 @@ class Lattice(Algebra):
     def max(self):
         """
         devuelve el maximo del reticulado
+
+        >>> from folpy.examples.lattices import *
+        >>> model_to_lattice(rhombus).max()
+        3
+        >>> model_to_lattice(M3).max()
+        4
+        >>> model_to_lattice(N5).max()
+        4
         """
         max_element = self.universe[0]
         for x in self.universe:
@@ -82,6 +90,14 @@ class Lattice(Algebra):
     def min(self):
         """
         devuelve el minimo del reticulado
+
+        >>> from folpy.examples.lattices import *
+        >>> model_to_lattice(rhombus).min()
+        0
+        >>> model_to_lattice(M3).min()
+        0
+        >>> model_to_lattice(N5).min()
+        0
         """
         min_element = self.universe[0]
         for x in self.universe:
@@ -119,11 +135,19 @@ class Lattice(Algebra):
     def is_distributive(self):
         """
         Decide si un reticulado es distributivo
+
+        >>> from folpy.examples.lattices import *
+        >>> model_to_lattice(rhombus).is_distributive()
+        True
+        >>> model_to_lattice(M3).is_distributive()
+        False
+        >>> model_to_lattice(N5).is_distributive()
+        False
         """
         if self.distributive:
             return self.distributive
         distributive = True
-        for x, y, z in combinations_with_replacement(self.universe, r=3):
+        for x, y, z in product(self.universe, repeat=3):
             condition1 = self.infimum(x, self.supreme(y, z))
             condition2 = self.supreme(self.infimum(x, y), self.infimum(x, z))
             condition = condition1 == condition2
@@ -201,6 +225,20 @@ class LatticeQuotient(Quotient, Lattice):
         result += indent(repr(self.operations) + ",\n")
         result += indent("congruence= " + repr(self.congruence) + "\n")
         return result + ")"
+
+
+def model_to_lattice(model):
+    """
+    convierte un modelo o algebra que es un reticulado, al tipo Lattice
+    """
+    assert '^' in model.operations
+    assert 'v' in model.operations
+    return Lattice(
+        model.universe,
+        model.operations['^'],
+        model.operations['v'],
+        name=model.name
+        )
 
 
 if __name__ == "__main__":
