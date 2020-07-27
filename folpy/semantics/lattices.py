@@ -188,7 +188,6 @@ class Lattice(Algebra):
         """
         result = {}
         for a in self.universe:
-            print(a)
             result[a] = self.covers(a)
         return result
 
@@ -223,9 +222,48 @@ class Lattice(Algebra):
         """
         result = {}
         for a in self.universe:
-            print(a)
             result[a] = self.covers_by(a)
         return result
+
+    def is_join_irreducible(self, a):
+        """
+        Decide si el elemento a es join-irreducible
+
+        >>> from folpy.examples.lattices import *
+        >>> model_to_lattice(N5).is_join_irreducible(2)
+        True
+        """
+        return a != self.min() and len(self.covers_by_dict[a]) == 1
+
+    def join_irreducibles(self):
+        """
+        Devuelve una lista con los join-irreducibles
+
+        >>> from folpy.examples.lattices import *
+        >>> model_to_lattice(N5).join_irreducibles()
+        [1, 2, 3]
+        """
+        return [a for a in self.universe if self.is_join_irreducible(a)]
+
+    def is_meet_irreducible(self, a):
+        """
+        Decide si el elemento a es meet-irreducible
+
+        >>> from folpy.examples.lattices import *
+        >>> model_to_lattice(N5).is_join_irreducible(2)
+        True
+        """
+        return a != self.max() and len(self.covers_dict[a]) == 1
+
+    def meet_irreducibles(self):
+        """
+        Devuelve una lista con los meet-irreducibles
+
+        >>> from folpy.examples.lattices import *
+        >>> model_to_lattice(N5).join_irreducibles()
+        [1, 2, 3]
+        """
+        return [a for a in self.universe if self.is_meet_irreducible(a)]
 
 
 class Sublattice(Subalgebra, Lattice):
