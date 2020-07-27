@@ -236,8 +236,6 @@ class Function(object):
                 result = "Constant(\n"
                 table = str(self.table()[0][0])
 
-        if len(table) > 10:
-            table = table[:5] + [".", ".", "."] + table[-5:]
         table = indent("\n".join(table))
 
         return result + table + ")"
