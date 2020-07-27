@@ -157,6 +157,76 @@ class Lattice(Algebra):
         self.distributive = distributive
         return distributive
 
+    def covers(self, a):
+        """
+        devuelve una lista con los elementos que cubren a
+
+        >>> from folpy.examples.lattices import *
+        >>> model_to_lattice(rhombus).covers(0)
+        [1, 2]
+        >>> model_to_lattice(rhombus).covers(1)
+        [3]
+        >>> model_to_lattice(M3).covers(0)
+        [1, 2, 3]
+        """
+        result = []
+        for b in self.universe:
+            if a != b and self.gt(b, a):
+                if any((a != c and
+                        self.gt(c, a) and
+                        c != b and
+                        self.gt(b, c)) for c in self.universe):
+                    continue
+                result.append(b)
+        return result
+
+    @property
+    def covers_dict(self):
+        """
+        devuelve un diccionario que para cada elemento, tiene la lista con los
+        elementos que cubren a ese elemento
+        """
+        result = {}
+        for a in self.universe:
+            print(a)
+            result[a] = self.covers(a)
+        return result
+
+    def covers_by(self, a):
+        """
+        devuelve una lista con los elementos que son cubiertos por a
+
+        >>> from folpy.examples.lattices import *
+        >>> model_to_lattice(rhombus).covers_by(3)
+        [1, 2]
+        >>> model_to_lattice(rhombus).covers_by(1)
+        [0]
+        >>> model_to_lattice(M3).covers_by(4)
+        [1, 2, 3]
+        """
+        result = []
+        for b in self.universe:
+            if a != b and self.lt(b, a):
+                if any((a != c and
+                        self.lt(c, a) and
+                        c != b and
+                        self.lt(b, c)) for c in self.universe):
+                    continue
+                result.append(b)
+        return result
+
+    @property
+    def covers_by_dict(self):
+        """
+        devuelve un diccionario que para cada elemento, tiene la lista con los
+        elementos que son cubiertos por ese elemento
+        """
+        result = {}
+        for a in self.universe:
+            print(a)
+            result[a] = self.covers_by(a)
+        return result
+
 
 class Sublattice(Subalgebra, Lattice):
     """
