@@ -19,16 +19,6 @@ class Algebra(Model):
     def __init__(self, fo_type, universe, operations, name=""):
         super().__init__(fo_type, universe, operations, {}, name)
 
-    def __repr__(self):
-        if self.name:
-            return "Algebra(name= %s)\n" % self.name
-        else:
-            result = "Algebra(\n"
-            result += indent(repr(self.type) + ",\n")
-            result += indent(repr(self.universe) + ",\n")
-            result += indent(repr(self.operations))
-            return result + ")"
-
     def __hash__(self):
         """
         Hash para los modelos de primer orden
@@ -180,14 +170,6 @@ class Subalgebra(Submodel, Algebra):
         super().__init__(
             fo_type, universe, operations, {}, supermodel)
 
-    def __repr__(self):
-        result = "Subalgebra(\n"
-        result += indent(repr(self.type) + ",\n")
-        result += indent(repr(self.universe) + ",\n")
-        result += indent(repr(self.operations) + ",\n")
-        result += indent("supermodel= " + repr(self.supermodel) + "\n")
-        return result + ")"
-
     def is_subdirect(self):
         """
         Dado una subalgebra de un producto, decide si es un producto subdirecto
@@ -251,7 +233,7 @@ class Quotient(Algebra):
         self.supermodel = supermodel
 
     def __repr__(self):
-        result = "Quotient(\n"
+        result = self.class_name + "(\n"
         result += indent(repr(self.type) + ",\n")
         result += indent(repr(self.universe) + ",\n")
         result += indent(repr(self.operations) + ",\n")

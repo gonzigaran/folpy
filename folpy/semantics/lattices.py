@@ -3,7 +3,6 @@
 
 from itertools import product
 
-from ..utils import indent
 from ..syntax.types import AlgebraicType
 
 from .algebras import Algebra, Subalgebra, Quotient
@@ -24,15 +23,6 @@ class Lattice(Algebra):
         operations["v"] = infimum
         super().__init__(fo_type, universe, operations, name)
         self.distributive = distributive
-
-    def __repr__(self):
-        if self.name:
-            return "Lattice(name= %s)\n" % self.name
-        else:
-            result = "Lattice(\n"
-            result += indent(repr(self.universe) + ",\n")
-            result += indent(repr(self.operations))
-            return result + ")"
 
     def __mul__(self, other):
         """
@@ -278,13 +268,6 @@ class Sublattice(Subalgebra, Lattice):
                          operations,
                          supermodel)
 
-    def __repr__(self):
-        result = "Sublattice(\n"
-        result += indent(repr(self.universe) + ",\n")
-        result += indent(repr(self.operations) + ",\n")
-        result += indent("supermodel= " + repr(self.supermodel) + "\n")
-        return result + ")"
-
     def is_subdirect(self):
         """
         Dado una subreticulado de un producto, decide si es un producto
@@ -326,13 +309,6 @@ class LatticeQuotient(Quotient, Lattice):
     def __init__(self, supermodel, congruence):
         assert isinstance(supermodel, Lattice), "supermodel no es un reticulado"
         super().__init__(supermodel, congruence)
-
-    def __repr__(self):
-        result = "LatticeQuotient(\n"
-        result += indent(repr(self.universe) + ",\n")
-        result += indent(repr(self.operations) + ",\n")
-        result += indent("congruence= " + repr(self.congruence) + "\n")
-        return result + ")"
 
 
 def model_to_lattice(model):

@@ -32,12 +32,13 @@ class Model(object):
         self.relations = relations
         self.supermodel = self
         self.name = name
+        self.class_name = type(self).__name__
 
     def __repr__(self):
         if self.name:
-            return "Model(name= %s)\n" % self.name
+            return "%s(name= %s)\n" % (self.class_name, self.name)
         else:
-            result = "Model(\n"
+            result = self.class_name + "(\n"
             result += indent(repr(self.type) + ",\n")
             result += indent(repr(self.universe) + ",\n")
             result += indent(repr(self.operations) + ",\n")
@@ -426,7 +427,7 @@ class Submodel(Model):
         self.supermodel = supermodel
 
     def __repr__(self):
-        result = "Submodel(\n"
+        result = self.class_name + "(\n"
         result += indent(repr(self.type) + ",\n")
         result += indent(repr(self.universe) + ",\n")
         result += indent(repr(self.operations) + ",\n")
