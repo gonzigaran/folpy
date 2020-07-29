@@ -17,11 +17,11 @@ class Lattice(Algebra):
     especificas
     """
 
-    def __init__(self, universe, supreme, infimum, name="", distributive=None):
+    def __init__(self, universe, join, meet, name="", distributive=None):
         fo_type = AlgebraicType({"^": 2, "v": 2})
         operations = {}
-        operations["^"] = supreme
-        operations["v"] = infimum
+        operations["v"] = join
+        operations["^"] = meet
         super().__init__(fo_type, universe, operations, name)
         self.distributive = distributive
 
@@ -37,29 +37,29 @@ class Lattice(Algebra):
         """
         return LatticeProduct([self] * exponent)
 
-    def supreme(self, a, b):
+    def join(self, a, b):
         """
         devuelve el supremo de a y b para el reticulado
         """
-        return self.operations['^'](a, b)
+        return self.operations['v'](a, b)
 
-    def infimum(self, a, b):
+    def meet(self, a, b):
         """
         devuelve el infimo de a y b para el reticulado
         """
-        return self.operations['v'](a, b)
+        return self.operations['^'](a, b)
 
     def gt(self, a, b):
         """
         devuelve la relación >= para los elementos a y b del reticulado
         """
-        return self.supreme(a, b) == a
+        return self.join(a, b) == a
 
     def lt(self, a, b):
         """
         devuelve la relación <= para los elementos a y b del reticulado
         """
-        return self.infimum(a, b) == a
+        return self.meet(a, b) == a
 
     @lru_cache(maxsize=1)
     def max(self):
@@ -76,7 +76,7 @@ class Lattice(Algebra):
         """
         max_element = self.universe[0]
         for x in self.universe:
-            max_element = self.supreme(x, max_element)
+            max_element = self.join(x, max_element)
         return max_element
 
     @lru_cache(maxsize=1)
@@ -94,7 +94,7 @@ class Lattice(Algebra):
         """
         min_element = self.universe[0]
         for x in self.universe:
-            min_element = self.infimum(x, min_element)
+            min_element = self.meet(x, min_element)
         return min_element
 
     def continous(self):
@@ -142,8 +142,8 @@ class Lattice(Algebra):
             return self.distributive
         distributive = True
         for x, y, z in product(self.universe, repeat=3):
-            condition1 = self.infimum(x, self.supreme(y, z))
-            condition2 = self.supreme(self.infimum(x, y), self.infimum(x, z))
+            condition1 = self.meet(x, self.join(y, z))
+            condition2 = self.join(self.meet(x, y), self.meet(x, z))
             condition = condition1 == condition2
             distributive = distributive and condition
             if not distributive:
@@ -332,8 +332,8 @@ def model_to_lattice(model):
     assert 'v' in model.operations
     return Lattice(
         model.universe,
-        model.operations['^'],
         model.operations['v'],
+        model.operations['^'],
         name=model.name
         )
 

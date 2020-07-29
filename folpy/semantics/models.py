@@ -207,7 +207,7 @@ class Model(object):
         ([1], [[1]])
         >>> rhombus.subuniverse([1,2],rhombus.type)[0]
         [0, 1, 2, 3]
-        >>> rhombus.subuniverse([1,2],rhombus.type.subtype(["^"],[]))[0]
+        >>> rhombus.subuniverse([1,2],rhombus.type.subtype(["v"],[]))[0]
         [1, 2, 3]
         """
         if not subtype:
@@ -330,7 +330,7 @@ class Model(object):
         """
         if "<=" not in self.relations:
             def leq(x, y):
-                return self.operations["v"](x, y) == x
+                return self.operations["v"](x, y) == y
             self.relations["<="] = Relation(leq, self.universe, arity=2)
 
     def diagram(self, c, s=0):
