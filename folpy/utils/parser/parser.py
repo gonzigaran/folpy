@@ -3,7 +3,7 @@
 
 import sys
 
-from ...semantics import Model, Algebra
+from ...semantics import Model, Algebra, Lattice
 from ...semantics.modelfunctions import Relation, Operation
 from ...syntax import Type, AlgebraicType
 
@@ -182,9 +182,15 @@ class Parser(object):
             ) for k in self.operations.keys()}
         if self.relations == {}:
             algebra_type = AlgebraicType(self.name_type[0])
-            return Algebra(algebra_type,
-                           self.universe,
-                           self.operations)
+            op_names = self.operations.keys()
+            if (len(op_names) == 2) and ('^' in op_names) and ('v' in op_names):
+                return Lattice(self.universe,
+                               self.operations['v'],
+                               self.operations['^'])
+            else:
+                return Algebra(algebra_type,
+                               self.universe,
+                               self.operations)
         else:
             self.relations = {k: Relation(
                 self.relations[k],
