@@ -147,6 +147,18 @@ class Algebra(Model):
                     congruences.append(con)
         return congruences
 
+    @lru_cache(maxsize=1)
+    def congruence_lattice(self):
+        """
+        Devuelve el reticulado de congruencias
+
+        >>> from folpy.examples.lattices import rhombus
+        >>> len(rhombus.congruence_lattice())
+        4
+        """
+        from .lattices import CongruenceLattice
+        return CongruenceLattice(self.congruences())
+
     def restrict(self, subuniverse, subtype=None):
         """
         Devuelve la restriccion del algebra al subuniverso que se supone

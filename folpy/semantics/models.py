@@ -92,9 +92,9 @@ class Model(object):
         """
         Calcula el producto entre modelos
 
-        >>> from folpy.examples.posets import *
+        >>> from folpy.examples.lattices import *
         >>> c2 = gen_chain(2)
-        >>> bool(rhombus.is_isomorphic(c2*c2, rhombus.type))
+        >>> bool(rhombus.is_isomorphic(c2*c2))
         True
         """
         return Product([self, other])
@@ -105,7 +105,7 @@ class Model(object):
 
         >>> from folpy.examples.posets import *
         >>> c2 = gen_chain(2)
-        >>> bool((rhombus**2).is_isomorphic(c2**4, rhombus.type))
+        >>> bool((rhombus**2).is_isomorphic(c2**4))
         True
         """
         return Product([self] * exponent)
@@ -277,7 +277,7 @@ class Model(object):
         """
         if not subtype:
             subtype = self.type
-        substructure = self.restrict(subuniverse, subtype)
+        substructure = self.restrict(subuniverse)
         emb = Embedding(
             {(k,): k for k in subuniverse}, substructure, self, subtype)
         return (emb, substructure)

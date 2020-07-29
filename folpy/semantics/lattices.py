@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
-from itertools import product
+from itertools import product, combinations
 from functools import lru_cache
 
 from ..syntax.types import AlgebraicType
 
 from .algebras import Algebra, Subalgebra, Quotient
 from .models import Product
+from .modelfunctions import Operation
 
 
 class Lattice(Algebra):
@@ -108,10 +109,9 @@ class Lattice(Algebra):
         for op in self.operations:
             operations[op] = self.operations[op].rename(translation)
 
-        return (Lattice(self.type,
-                        universe,
-                        self.operations['^'],
-                        self.operations['v']), translation)
+        return (Lattice(universe,
+                        operations['v'],
+                        operations['^']), translation)
 
     def restrict(self, subuniverse):
         """
@@ -268,16 +268,16 @@ class Lattice(Algebra):
         return [a for a in self.universe if self.is_meet_irreducible(a)]
 
 
-class Sublattice(Subalgebra, Lattice):
+class Sublattice(Lattice, Subalgebra):
     """
     Clase para subreticulados
     """
 
     def __init__(self, universe, operations, supermodel):
         assert isinstance(supermodel, Lattice), "supermodel no es un reticulado"
-        super().__init__(supermodel.type,
-                         universe,
-                         operations,
+        super().__init__(universe,
+                         operations['v'],
+                         operations['^'],
                          supermodel)
 
     @lru_cache(maxsize=1)
@@ -322,6 +322,81 @@ class LatticeQuotient(Quotient, Lattice):
     def __init__(self, supermodel, congruence):
         assert isinstance(supermodel, Lattice), "supermodel no es un reticulado"
         super().__init__(supermodel, congruence)
+
+
+class Projective(Lattice):
+
+    """
+    Clase para representar un proyectivo de congruencias
+    """
+
+    def __init__(self,
+                 generators,
+                 full=False,
+                 name="",
+                 distributive=None):
+        self.generators = list(generators)
+        self.algebra = self.generators[0].algebra
+        if full:
+            universe = self.generators.copy()
+        else:
+            universe = self.gen_universe()
+        join = self.join_operation(universe)
+        meet = self.meet_operation(universe)
+        super().__init__(universe,
+                         join,
+                         meet,
+                         name=name,
+                         distributive=distributive)
+
+    @lru_cache()
+    def gen_universe(self):
+        universe = self.generators.copy()
+        universe.append(self.algebra.maxcon())
+        if len(self.generators) > 1:
+            for r in range(2, len(self.generators)):
+                for titas in combinations(self.generators, r):
+                    intersection = self.intersection(titas)
+                    if intersection not in universe:
+                        universe.append(intersection)
+        return universe
+
+    def intersection(self, titas):
+        if len(titas) == 0:
+            return self.algebra.maxcon()
+        elif len(titas) == 1:
+            return titas[0]
+        else:
+            intersection = titas[0]
+            for i in range(1, len(titas)):
+                intersection = intersection & titas[i]
+            return intersection
+
+    def join_operation(self, universe):
+        return Operation(lambda x, y: min(
+            [t for t in universe if (t >= x and t >= y)]), universe)
+
+    def meet_operation(self, universe):
+        return Operation(lambda x, y: x & y, universe)
+
+
+class CongruenceLattice(Projective):
+
+    """
+    Clase para representar el reticulado de congruencias
+    """
+
+    def __init__(self,
+                 congruences,
+                 name="",
+                 distributive=None):
+        super().__init__(congruences,
+                         full=True,
+                         name=name,
+                         distributive=distributive)
+
+    def join_operation(self, universe):
+        return Operation(lambda x, y: x | y, universe)
 
 
 def model_to_lattice(model):

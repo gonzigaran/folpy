@@ -180,7 +180,7 @@ def gen_chain(n):
     def inf(x, y):
         return min(x, y)
 
-    operations = {"^": sup, "v": inf}
+    operations = {"v": sup, "^": inf}
 
     return Algebra(ret_type,
                    universe,
