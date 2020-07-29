@@ -187,6 +187,7 @@ class Lattice(Algebra):
             result[a] = self.covers(a)
         return result
 
+    @lru_cache()
     def covers_by(self, a):
         """
         devuelve una lista con los elementos que son cubiertos por a
