@@ -2,6 +2,7 @@
 # -*- coding: utf8 -*-
 
 from itertools import product
+from functools import lru_cache
 
 from ..syntax.types import AlgebraicType
 
@@ -60,6 +61,7 @@ class Lattice(Algebra):
         """
         return self.infimum(a, b) == a
 
+    @lru_cache(maxsize=1)
     def max(self):
         """
         devuelve el maximo del reticulado
@@ -77,6 +79,7 @@ class Lattice(Algebra):
             max_element = self.supreme(x, max_element)
         return max_element
 
+    @lru_cache(maxsize=1)
     def min(self):
         """
         devuelve el minimo del reticulado
@@ -122,6 +125,7 @@ class Lattice(Algebra):
                           },
                           self)
 
+    @lru_cache(maxsize=1)
     def is_distributive(self):
         """
         Decide si un reticulado es distributivo
@@ -147,6 +151,7 @@ class Lattice(Algebra):
         self.distributive = distributive
         return distributive
 
+    @lru_cache()
     def covers(self, a):
         """
         devuelve una lista con los elementos que cubren a
@@ -171,6 +176,7 @@ class Lattice(Algebra):
         return result
 
     @property
+    @lru_cache(maxsize=1)
     def covers_dict(self):
         """
         devuelve un diccionario que para cada elemento, tiene la lista con los
@@ -205,6 +211,7 @@ class Lattice(Algebra):
         return result
 
     @property
+    @lru_cache(maxsize=1)
     def covers_by_dict(self):
         """
         devuelve un diccionario que para cada elemento, tiene la lista con los
@@ -215,6 +222,7 @@ class Lattice(Algebra):
             result[a] = self.covers_by(a)
         return result
 
+    @lru_cache()
     def is_join_irreducible(self, a):
         """
         Decide si el elemento a es join-irreducible
@@ -225,6 +233,7 @@ class Lattice(Algebra):
         """
         return a != self.min() and len(self.covers_by_dict[a]) == 1
 
+    @lru_cache(maxsize=1)
     def join_irreducibles(self):
         """
         Devuelve una lista con los join-irreducibles
@@ -235,6 +244,7 @@ class Lattice(Algebra):
         """
         return [a for a in self.universe if self.is_join_irreducible(a)]
 
+    @lru_cache()
     def is_meet_irreducible(self, a):
         """
         Decide si el elemento a es meet-irreducible
@@ -245,6 +255,7 @@ class Lattice(Algebra):
         """
         return a != self.max() and len(self.covers_dict[a]) == 1
 
+    @lru_cache(maxsize=1)
     def meet_irreducibles(self):
         """
         Devuelve una lista con los meet-irreducibles
@@ -268,6 +279,7 @@ class Sublattice(Subalgebra, Lattice):
                          operations,
                          supermodel)
 
+    @lru_cache(maxsize=1)
     def is_subdirect(self):
         """
         Dado una subreticulado de un producto, decide si es un producto

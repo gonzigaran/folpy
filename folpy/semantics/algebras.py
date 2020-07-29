@@ -2,6 +2,7 @@
 # -*- coding: utf8 -*-
 
 from itertools import chain
+from functools import lru_cache
 
 from ..utils import indent
 from .models import Model, Submodel, Product
@@ -117,6 +118,7 @@ class Algebra(Model):
                     congruences.append(con)
         return congruences
 
+    @lru_cache(maxsize=1)
     def congruences(self):
         """
         Devuelve todas las congruencias del algebra
@@ -170,6 +172,7 @@ class Subalgebra(Submodel, Algebra):
         super().__init__(
             fo_type, universe, operations, {}, supermodel)
 
+    @lru_cache(maxsize=1)
     def is_subdirect(self):
         """
         Dado una subalgebra de un producto, decide si es un producto subdirecto
