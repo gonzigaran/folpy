@@ -328,6 +328,13 @@ class Projective(Lattice):
 
     """
     Clase para representar un proyectivo de congruencias
+
+    >>> from folpy.examples.lattices import *
+    >>> tita1 = rhombus.congruences()[1]
+    >>> tita2 = rhombus.congruences()[2]
+    >>> P = Projective([tita1, tita2])
+    >>> len(P)
+    3
     """
 
     def __init__(self,
@@ -349,7 +356,6 @@ class Projective(Lattice):
                          name=name,
                          distributive=distributive)
 
-    @lru_cache()
     def gen_universe(self):
         universe = self.generators.copy()
         universe.append(self.algebra.maxcon())
