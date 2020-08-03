@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
-from itertools import product
+from itertools import product, combinations
+from functools import lru_cache
 
-from ..utils import indent
 from ..syntax.types import AlgebraicType
 
-from .algebras import Algebra, Subalgebra, Quotient
-from .models import Product
+from .algebras import Algebra, Subalgebra, Quotient, AlgebraProduct
+from .modelfunctions import Operation
 
 
 class Lattice(Algebra):
@@ -17,59 +17,63 @@ class Lattice(Algebra):
     especificas
     """
 
-    def __init__(self, universe, supreme, infimum, name="", distributive=None):
+    def __init__(self, universe, join, meet, name="", distributive=None):
         fo_type = AlgebraicType({"^": 2, "v": 2})
         operations = {}
-        operations["^"] = supreme
-        operations["v"] = infimum
+        operations["v"] = join
+        operations["^"] = meet
         super().__init__(fo_type, universe, operations, name)
         self.distributive = distributive
-
-    def __repr__(self):
-        if self.name:
-            return "Lattice(name= %s)\n" % self.name
-        else:
-            result = "Lattice(\n"
-            result += indent(repr(self.universe) + ",\n")
-            result += indent(repr(self.operations))
-            return result + ")"
 
     def __mul__(self, other):
         """
         Calcula el producto entre reticulados
+
+        >>> from folpy.examples.lattices import *
+        >>> c2 = model_to_lattice(gen_chain(2))
+        >>> rhom = c2*c2
+        >>> len(rhom)
+        4
         """
         return LatticeProduct([self, other])
 
     def __pow__(self, exponent):
         """
         Calcula la potencia de un álgebra
+
+        >>> from folpy.examples.lattices import *
+        >>> c2 = model_to_lattice(gen_chain(2))
+        >>> rhom2 = c2**3
+        >>> len(rhom2)
+        8
         """
         return LatticeProduct([self] * exponent)
 
-    def supreme(self, a, b):
+    def join(self, a, b):
         """
         devuelve el supremo de a y b para el reticulado
         """
-        return self.operations['^'](a, b)
+        return self.operations['v'](a, b)
 
-    def infimum(self, a, b):
+    def meet(self, a, b):
         """
         devuelve el infimo de a y b para el reticulado
         """
-        return self.operations['v'](a, b)
+        return self.operations['^'](a, b)
 
     def gt(self, a, b):
         """
         devuelve la relación >= para los elementos a y b del reticulado
         """
-        return self.supreme(a, b) == a
+        return self.join(a, b) == a
 
     def lt(self, a, b):
         """
         devuelve la relación <= para los elementos a y b del reticulado
         """
-        return self.infimum(a, b) == a
+        return self.meet(a, b) == a
 
+    @lru_cache(maxsize=1)
     def max(self):
         """
         devuelve el maximo del reticulado
@@ -84,9 +88,10 @@ class Lattice(Algebra):
         """
         max_element = self.universe[0]
         for x in self.universe:
-            max_element = self.supreme(x, max_element)
+            max_element = self.join(x, max_element)
         return max_element
 
+    @lru_cache(maxsize=1)
     def min(self):
         """
         devuelve el minimo del reticulado
@@ -101,7 +106,7 @@ class Lattice(Algebra):
         """
         min_element = self.universe[0]
         for x in self.universe:
-            min_element = self.infimum(x, min_element)
+            min_element = self.meet(x, min_element)
         return min_element
 
     def continous(self):
@@ -115,15 +120,18 @@ class Lattice(Algebra):
         for op in self.operations:
             operations[op] = self.operations[op].rename(translation)
 
-        return (Lattice(self.type,
-                        universe,
-                        self.operations['^'],
-                        self.operations['v']), translation)
+        return (Lattice(universe,
+                        operations['v'],
+                        operations['^']), translation)
 
     def restrict(self, subuniverse):
         """
         Devuelve la restriccion del algebra al subuniverso que se supone
         que es cerrado en en subtype
+
+        >>> from folpy.examples.lattices import *
+        >>> len(rhombus.restrict([0,3]))
+        2
         """
         return Sublattice(subuniverse,
                           {
@@ -132,6 +140,7 @@ class Lattice(Algebra):
                           },
                           self)
 
+    @lru_cache(maxsize=1)
     def is_distributive(self):
         """
         Decide si un reticulado es distributivo
@@ -148,8 +157,8 @@ class Lattice(Algebra):
             return self.distributive
         distributive = True
         for x, y, z in product(self.universe, repeat=3):
-            condition1 = self.infimum(x, self.supreme(y, z))
-            condition2 = self.supreme(self.infimum(x, y), self.infimum(x, z))
+            condition1 = self.meet(x, self.join(y, z))
+            condition2 = self.join(self.meet(x, y), self.meet(x, z))
             condition = condition1 == condition2
             distributive = distributive and condition
             if not distributive:
@@ -157,6 +166,7 @@ class Lattice(Algebra):
         self.distributive = distributive
         return distributive
 
+    @lru_cache()
     def covers(self, a):
         """
         devuelve una lista con los elementos que cubren a
@@ -181,6 +191,7 @@ class Lattice(Algebra):
         return result
 
     @property
+    @lru_cache(maxsize=1)
     def covers_dict(self):
         """
         devuelve un diccionario que para cada elemento, tiene la lista con los
@@ -191,6 +202,7 @@ class Lattice(Algebra):
             result[a] = self.covers(a)
         return result
 
+    @lru_cache()
     def covers_by(self, a):
         """
         devuelve una lista con los elementos que son cubiertos por a
@@ -215,6 +227,7 @@ class Lattice(Algebra):
         return result
 
     @property
+    @lru_cache(maxsize=1)
     def covers_by_dict(self):
         """
         devuelve un diccionario que para cada elemento, tiene la lista con los
@@ -225,6 +238,7 @@ class Lattice(Algebra):
             result[a] = self.covers_by(a)
         return result
 
+    @lru_cache()
     def is_join_irreducible(self, a):
         """
         Decide si el elemento a es join-irreducible
@@ -235,6 +249,7 @@ class Lattice(Algebra):
         """
         return a != self.min() and len(self.covers_by_dict[a]) == 1
 
+    @lru_cache(maxsize=1)
     def join_irreducibles(self):
         """
         Devuelve una lista con los join-irreducibles
@@ -245,6 +260,7 @@ class Lattice(Algebra):
         """
         return [a for a in self.universe if self.is_join_irreducible(a)]
 
+    @lru_cache()
     def is_meet_irreducible(self, a):
         """
         Decide si el elemento a es meet-irreducible
@@ -255,6 +271,7 @@ class Lattice(Algebra):
         """
         return a != self.max() and len(self.covers_dict[a]) == 1
 
+    @lru_cache(maxsize=1)
     def meet_irreducibles(self):
         """
         Devuelve una lista con los meet-irreducibles
@@ -266,25 +283,19 @@ class Lattice(Algebra):
         return [a for a in self.universe if self.is_meet_irreducible(a)]
 
 
-class Sublattice(Subalgebra, Lattice):
+class Sublattice(Lattice, Subalgebra):
     """
     Clase para subreticulados
     """
 
     def __init__(self, universe, operations, supermodel):
         assert isinstance(supermodel, Lattice), "supermodel no es un reticulado"
-        super().__init__(supermodel.type,
-                         universe,
-                         operations,
+        super().__init__(universe,
+                         operations['v'],
+                         operations['^'],
                          supermodel)
 
-    def __repr__(self):
-        result = "Sublattice(\n"
-        result += indent(repr(self.universe) + ",\n")
-        result += indent(repr(self.operations) + ",\n")
-        result += indent("supermodel= " + repr(self.supermodel) + "\n")
-        return result + ")"
-
+    @lru_cache(maxsize=1)
     def is_subdirect(self):
         """
         Dado una subreticulado de un producto, decide si es un producto
@@ -304,7 +315,7 @@ class Sublattice(Subalgebra, Lattice):
         return False
 
 
-class LatticeProduct(Product, Lattice):
+class LatticeProduct(AlgebraProduct, Lattice):
     """
     Clase para producto de reticulados
     """
@@ -313,7 +324,11 @@ class LatticeProduct(Product, Lattice):
         for factor in factors:
             assert isinstance(factor, Lattice), str(factor) + " no es \
                 reticulado"
-        super().__init__(factors)
+        alg_prod = AlgebraProduct(factors)
+        Lattice.__init__(self,
+                         alg_prod.universe,
+                         alg_prod.operations['v'],
+                         alg_prod.operations['^'])
 
 
 class LatticeQuotient(Quotient, Lattice):
@@ -321,18 +336,105 @@ class LatticeQuotient(Quotient, Lattice):
     """
     Reticulado Cociente
     Dada un reticulado y una congruencia, devuelve el reticulado cociente
+
+    >>> from folpy.examples.lattices import *
+    >>> rhom = model_to_lattice(rhombus)
+    >>> A = LatticeQuotient(rhom, rhom.maxcon())
+    >>> len(A)
+    1
+    >>> A = LatticeQuotient(rhom, rhom.mincon())
+    >>> bool(A.is_isomorphic(rhom))
+    True
     """
 
     def __init__(self, supermodel, congruence):
         assert isinstance(supermodel, Lattice), "supermodel no es un reticulado"
-        super().__init__(supermodel, congruence)
+        alg_quo = Quotient(supermodel, congruence)
+        Lattice.__init__(self,
+                         alg_quo.universe,
+                         alg_quo.operations['v'],
+                         alg_quo.operations['^'])
 
-    def __repr__(self):
-        result = "LatticeQuotient(\n"
-        result += indent(repr(self.universe) + ",\n")
-        result += indent(repr(self.operations) + ",\n")
-        result += indent("congruence= " + repr(self.congruence) + "\n")
-        return result + ")"
+
+class Projective(Lattice):
+
+    """
+    Clase para representar un proyectivo de congruencias
+
+    >>> from folpy.examples.lattices import *
+    >>> tita1 = rhombus.congruences()[1]
+    >>> tita2 = rhombus.congruences()[2]
+    >>> P = Projective([tita1, tita2])
+    >>> len(P)
+    3
+    """
+
+    def __init__(self,
+                 generators,
+                 full=False,
+                 name="",
+                 distributive=None):
+        self.generators = list(generators)
+        self.algebra = self.generators[0].algebra
+        if full:
+            universe = self.generators.copy()
+        else:
+            universe = self.gen_universe()
+        join = self.join_operation(universe)
+        meet = self.meet_operation(universe)
+        super().__init__(universe,
+                         join,
+                         meet,
+                         name=name,
+                         distributive=distributive)
+
+    def gen_universe(self):
+        universe = self.generators.copy()
+        universe.append(self.algebra.maxcon())
+        if len(self.generators) > 1:
+            for r in range(2, len(self.generators)):
+                for titas in combinations(self.generators, r):
+                    intersection = self.intersection(titas)
+                    if intersection not in universe:
+                        universe.append(intersection)
+        return universe
+
+    def intersection(self, titas):
+        if len(titas) == 0:
+            return self.algebra.maxcon()
+        elif len(titas) == 1:
+            return titas[0]
+        else:
+            intersection = titas[0]
+            for i in range(1, len(titas)):
+                intersection = intersection & titas[i]
+            return intersection
+
+    def join_operation(self, universe):
+        return Operation(lambda x, y: min(
+            [t for t in universe if (t >= x and t >= y)]), universe)
+
+    def meet_operation(self, universe):
+        return Operation(lambda x, y: x & y, universe)
+
+
+class CongruenceLattice(Projective):
+
+    """
+    Clase para representar el reticulado de congruencias
+    """
+
+    def __init__(self,
+                 congruences,
+                 name="",
+                 distributive=None):
+        super().__init__(congruences,
+                         full=True,
+                         name=name,
+                         distributive=distributive)
+
+    def join_operation(self, universe):
+        return Operation(lambda x, y: x | y, universe)
 
 
 def model_to_lattice(model):
@@ -343,8 +445,8 @@ def model_to_lattice(model):
     assert 'v' in model.operations
     return Lattice(
         model.universe,
-        model.operations['^'],
         model.operations['v'],
+        model.operations['^'],
         name=model.name
         )
 

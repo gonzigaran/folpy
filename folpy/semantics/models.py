@@ -32,12 +32,13 @@ class Model(object):
         self.relations = relations
         self.supermodel = self
         self.name = name
+        self.class_name = type(self).__name__
 
     def __repr__(self):
         if self.name:
-            return "Model(name= %s)\n" % self.name
+            return "%s(name= %s)\n" % (self.class_name, self.name)
         else:
-            result = "Model(\n"
+            result = self.class_name + "(\n"
             result += indent(repr(self.type) + ",\n")
             result += indent(repr(self.universe) + ",\n")
             result += indent(repr(self.operations) + ",\n")
@@ -91,9 +92,9 @@ class Model(object):
         """
         Calcula el producto entre modelos
 
-        >>> from folpy.examples.posets import *
+        >>> from folpy.examples.lattices import *
         >>> c2 = gen_chain(2)
-        >>> bool(rhombus.is_isomorphic(c2*c2, rhombus.type))
+        >>> bool(rhombus.is_isomorphic(c2*c2))
         True
         """
         return Product([self, other])
@@ -104,7 +105,7 @@ class Model(object):
 
         >>> from folpy.examples.posets import *
         >>> c2 = gen_chain(2)
-        >>> bool((rhombus**2).is_isomorphic(c2**4, rhombus.type))
+        >>> bool((rhombus**2).is_isomorphic(c2**4))
         True
         """
         return Product([self] * exponent)
@@ -206,7 +207,7 @@ class Model(object):
         ([1], [[1]])
         >>> rhombus.subuniverse([1,2],rhombus.type)[0]
         [0, 1, 2, 3]
-        >>> rhombus.subuniverse([1,2],rhombus.type.subtype(["^"],[]))[0]
+        >>> rhombus.subuniverse([1,2],rhombus.type.subtype(["v"],[]))[0]
         [1, 2, 3]
         """
         if not subtype:
@@ -276,7 +277,7 @@ class Model(object):
         """
         if not subtype:
             subtype = self.type
-        substructure = self.restrict(subuniverse, subtype)
+        substructure = self.restrict(subuniverse)
         emb = Embedding(
             {(k,): k for k in subuniverse}, substructure, self, subtype)
         return (emb, substructure)
@@ -329,7 +330,7 @@ class Model(object):
         """
         if "<=" not in self.relations:
             def leq(x, y):
-                return self.operations["v"](x, y) == x
+                return self.operations["v"](x, y) == y
             self.relations["<="] = Relation(leq, self.universe, arity=2)
 
     def diagram(self, c, s=0):
@@ -426,7 +427,7 @@ class Submodel(Model):
         self.supermodel = supermodel
 
     def __repr__(self):
-        result = "Submodel(\n"
+        result = self.class_name + "(\n"
         result += indent(repr(self.type) + ",\n")
         result += indent(repr(self.universe) + ",\n")
         result += indent(repr(self.operations) + ",\n")

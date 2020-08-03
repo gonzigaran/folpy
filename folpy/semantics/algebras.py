@@ -2,6 +2,7 @@
 # -*- coding: utf8 -*-
 
 from itertools import chain
+from functools import lru_cache
 
 from ..utils import indent
 from .models import Model, Submodel, Product
@@ -18,16 +19,6 @@ class Algebra(Model):
 
     def __init__(self, fo_type, universe, operations, name=""):
         super().__init__(fo_type, universe, operations, {}, name)
-
-    def __repr__(self):
-        if self.name:
-            return "Algebra(name= %s)\n" % self.name
-        else:
-            result = "Algebra(\n"
-            result += indent(repr(self.type) + ",\n")
-            result += indent(repr(self.universe) + ",\n")
-            result += indent(repr(self.operations))
-            return result + ")"
 
     def __hash__(self):
         """
@@ -127,6 +118,7 @@ class Algebra(Model):
                     congruences.append(con)
         return congruences
 
+    @lru_cache(maxsize=1)
     def congruences(self):
         """
         Devuelve todas las congruencias del algebra
@@ -155,6 +147,18 @@ class Algebra(Model):
                     congruences.append(con)
         return congruences
 
+    @lru_cache(maxsize=1)
+    def congruence_lattice(self):
+        """
+        Devuelve el reticulado de congruencias
+
+        >>> from folpy.examples.lattices import rhombus
+        >>> len(rhombus.congruence_lattice())
+        4
+        """
+        from .lattices import CongruenceLattice
+        return CongruenceLattice(self.congruences())
+
     def restrict(self, subuniverse, subtype=None):
         """
         Devuelve la restriccion del algebra al subuniverso que se supone
@@ -180,14 +184,7 @@ class Subalgebra(Submodel, Algebra):
         super().__init__(
             fo_type, universe, operations, {}, supermodel)
 
-    def __repr__(self):
-        result = "Subalgebra(\n"
-        result += indent(repr(self.type) + ",\n")
-        result += indent(repr(self.universe) + ",\n")
-        result += indent(repr(self.operations) + ",\n")
-        result += indent("supermodel= " + repr(self.supermodel) + "\n")
-        return result + ")"
-
+    @lru_cache(maxsize=1)
     def is_subdirect(self):
         """
         Dado una subalgebra de un producto, decide si es un producto subdirecto
@@ -251,7 +248,7 @@ class Quotient(Algebra):
         self.supermodel = supermodel
 
     def __repr__(self):
-        result = "Quotient(\n"
+        result = self.class_name + "(\n"
         result += indent(repr(self.type) + ",\n")
         result += indent(repr(self.universe) + ",\n")
         result += indent(repr(self.operations) + ",\n")
