@@ -6,8 +6,7 @@ from functools import lru_cache
 
 from ..syntax.types import AlgebraicType
 
-from .algebras import Algebra, Subalgebra, Quotient
-from .models import Product
+from .algebras import Algebra, Subalgebra, Quotient, AlgebraProduct
 from .modelfunctions import Operation
 
 
@@ -29,12 +28,24 @@ class Lattice(Algebra):
     def __mul__(self, other):
         """
         Calcula el producto entre reticulados
+
+        >>> from folpy.examples.lattices import *
+        >>> c2 = model_to_lattice(gen_chain(2))
+        >>> rhom = c2*c2
+        >>> len(rhom)
+        4
         """
         return LatticeProduct([self, other])
 
     def __pow__(self, exponent):
         """
         Calcula la potencia de un álgebra
+
+        >>> from folpy.examples.lattices import *
+        >>> c2 = model_to_lattice(gen_chain(2))
+        >>> rhom2 = c2**3
+        >>> len(rhom2)
+        8
         """
         return LatticeProduct([self] * exponent)
 
@@ -117,6 +128,10 @@ class Lattice(Algebra):
         """
         Devuelve la restriccion del algebra al subuniverso que se supone
         que es cerrado en en subtype
+
+        >>> from folpy.examples.lattices import *
+        >>> len(rhombus.restrict([0,3]))
+        2
         """
         return Sublattice(subuniverse,
                           {
@@ -300,7 +315,7 @@ class Sublattice(Lattice, Subalgebra):
         return False
 
 
-class LatticeProduct(Product, Lattice):
+class LatticeProduct(AlgebraProduct, Lattice):
     """
     Clase para producto de reticulados
     """
@@ -309,7 +324,11 @@ class LatticeProduct(Product, Lattice):
         for factor in factors:
             assert isinstance(factor, Lattice), str(factor) + " no es \
                 reticulado"
-        super().__init__(factors)
+        alg_prod = AlgebraProduct(factors)
+        Lattice.__init__(self,
+                         alg_prod.universe,
+                         alg_prod.operations['v'],
+                         alg_prod.operations['^'])
 
 
 class LatticeQuotient(Quotient, Lattice):
@@ -317,11 +336,24 @@ class LatticeQuotient(Quotient, Lattice):
     """
     Reticulado Cociente
     Dada un reticulado y una congruencia, devuelve el reticulado cociente
+
+    >>> from folpy.examples.lattices import *
+    >>> rhom = model_to_lattice(rhombus)
+    >>> A = LatticeQuotient(rhom, rhom.maxcon())
+    >>> len(A)
+    1
+    >>> A = LatticeQuotient(rhom, rhom.mincon())
+    >>> bool(A.is_isomorphic(rhom))
+    True
     """
 
     def __init__(self, supermodel, congruence):
         assert isinstance(supermodel, Lattice), "supermodel no es un reticulado"
-        super().__init__(supermodel, congruence)
+        alg_quo = Quotient(supermodel, congruence)
+        Lattice.__init__(self,
+                         alg_quo.universe,
+                         alg_quo.operations['v'],
+                         alg_quo.operations['^'])
 
 
 class Projective(Lattice):
