@@ -118,7 +118,6 @@ class Algebra(Model):
                     congruences.append(con)
         return congruences
 
-    @lru_cache(maxsize=1)
     def congruences(self):
         """
         Devuelve todas las congruencias del algebra
