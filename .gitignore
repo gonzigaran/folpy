@@ -130,3 +130,6 @@ dmypy.json
 
 # VSCode project settings
 .vscode
+
+# Micro editor
+*log.txt
