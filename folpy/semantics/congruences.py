@@ -8,11 +8,19 @@ class _CardinalBlock(object):
     def __init__(self, value):
         self.value = value
 
+    def __repr__(self):
+        return "CardinalBlock(%s)" % self.value
+
 
 class Partition(object):
     def __init__(self, iter_of_iter=()):
-        self.v = dict()
-        self.from_table(iter_of_iter)
+        if type(iter_of_iter) == dict:
+            assert any(isinstance(val, _CardinalBlock)
+                       for val in iter_of_iter.values())
+            self.v = iter_of_iter
+        else:
+            self.v = dict()
+            self.from_table(iter_of_iter)
 
     def __call__(self, a, b):
         return self.root(a) == self.root(b)
@@ -24,7 +32,7 @@ class Partition(object):
         return self.table() < other.table()
 
     def __le__(self, other):
-        return self == other or self < other
+        return self.table() <= other.table()
 
     def __ge__(self, other):
         return other <= self
@@ -44,6 +52,23 @@ class Partition(object):
             self.add_element(a)
             self.add_element(b)
             self.join_blocks(a, b)
+
+    def add_element(self, e):
+        if e not in self.v:
+            self.v[e] = _CardinalBlock(-1)
+
+    def join_blocks(self, i, j):
+        ri = self.root(i)
+        rj = self.root(j)
+        if ri != rj:
+            si = self.v[ri].value
+            sj = self.v[rj].value
+            if si > sj:
+                self.v[ri] = rj
+                self.v[rj] = _CardinalBlock(si + sj)
+            else:
+                self.v[rj] = ri
+                self.v[ri] = _CardinalBlock(si + sj)
 
     def table(self):
         result = set()
@@ -69,10 +94,6 @@ class Partition(object):
                 self.add_element(e)
                 self.join_blocks(e, ls[0])
 
-    def add_element(self, e):
-        if e not in self.v:
-            self.v[e] = _CardinalBlock(-1)
-
     def root(self, e):
         """
         Representante de la clase de equivalencia de e
@@ -85,19 +106,6 @@ class Partition(object):
         else:
             self.v[e] = self.root(self.v[e])
             return self.v[e]
-
-    def join_blocks(self, i, j):
-        ri = self.root(i)
-        rj = self.root(j)
-        if ri != rj:
-            si = self.v[ri].value
-            sj = self.v[rj].value
-            if si > sj:
-                self.v[ri] = rj
-                self.v[rj] = _CardinalBlock(si + sj)
-            else:
-                self.v[rj] = ri
-                self.v[ri] = _CardinalBlock(si + sj)
 
     def to_list(self):
         result = defaultdict(list)
@@ -117,7 +125,7 @@ class Partition(object):
             r2 = other.root(e)
             if (r1, r2) in ht:
                 r = ht[r1, r2]
-                result.v[r] = _CardinalBlock(result.v[r].value + 1)
+                result.v[r] = _CardinalBlock(result.v[r].value - 1)
                 result.v[e] = r
             else:
                 ht[(r1, r2)] = e
@@ -165,7 +173,7 @@ class Partition(object):
                 yield e
 
     def to_congruence(self, algebra):
-        return Congruence(self.table(), algebra)
+        return Congruence(self.v, algebra)
 
 
 class Congruence(Partition):
@@ -186,10 +194,11 @@ class Congruence(Partition):
     def __init__(self, table, algebra, check_operations=False):
         self.algebra = algebra
         super().__init__(table)
-        self_relation = []
-        for i in algebra.universe:
-            self_relation.append((i, i))
-        self.from_table(self_relation)
+        if type(table) != dict:
+            self_relation = []
+            for i in algebra.universe:
+                self_relation.append((i, i))
+            self.from_table(self_relation)
         if check_operations:
             assert self._are_operations_preserved()
 
@@ -207,33 +216,8 @@ class Congruence(Partition):
         assert self.algebra == other.algebra
         return self.join(other).to_congruence(self.algebra)
 
-    def __eq__(self, other):
-        if self.algebra != other.algebra:
-            return False
-        return super(Congruence, self).__eq__(other)
-
-    def __lt__(self, other):
-        if self.algebra != other.algebra:
-            return False
-        return super(Congruence, self).__lt__(other)
-
-    def __le__(self, other):
-        if self.algebra != other.algebra:
-            return False
-        return super(Congruence, self).__le__(other)
-
-    def __ge__(self, other):
-        if self.algebra != other.algebra:
-            return False
-        return super(Congruence, self).__ge__(other)
-
-    def __gt__(self, other):
-        if self.algebra != other.algebra:
-            return False
-        return super(Congruence, self).__gt__(other)
-
     def __repr__(self):
-        return "Congruence(" + super(Congruence, self).__repr__() + ")"
+        return "Congruence(%s)" % super().__repr__()
 
     def __hash__(self):
         return hash(frozenset(self.v.items()))
@@ -245,7 +229,7 @@ class Congruence(Partition):
         return self.block(x)
 
     def copy(self):
-        return Congruence(self.table(), self.algebra)
+        return Congruence(self.v.copy(), self.algebra)
 
     def _is_operation_preserved(self, op):
         if self.algebra.operations[op].arity() == 0:
@@ -343,7 +327,7 @@ def sup_proj(sigma, x, y):
     all_gt_xy = [c for c in sigma if (x <= c and y <= c)]
     result = x.algebra.maxcon()
     for r in all_gt_xy:
-        result = result & r
+        result = result and r
     return result
 
 

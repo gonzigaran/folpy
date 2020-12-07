@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
-from itertools import product, combinations
+from itertools import product
 from functools import lru_cache
 
 from ..syntax.types import AlgebraicType
@@ -24,6 +24,8 @@ class Lattice(Algebra):
         operations["^"] = meet
         super().__init__(fo_type, universe, operations, name)
         self.distributive = distributive
+        self.join_dic = {(x, x): x for x in self.universe}
+        self.meet_dic = {(x, x): x for x in self.universe}
 
     def __mul__(self, other):
         """
@@ -49,25 +51,47 @@ class Lattice(Algebra):
         """
         return LatticeProduct([self] * exponent)
 
-    def join(self, a, b):
+    def join(self, x, y):
         """
-        devuelve el supremo de a y b para el reticulado
+        devuelve el supremo de x e y para el reticulado
         """
-        return self.operations['v'](a, b)
+        if (x, y) not in self.join_dic:
+            join = self.operations['v'](x, y)
+            self.join_dic[(x, y)] = join
+            self.join_dic[(y, x)] = join
+            return join
+        return self.join_dic[(x, y)]
 
-    def meet(self, a, b):
+    def meet(self, x, y):
         """
-        devuelve el infimo de a y b para el reticulado
+        devuelve el infimo de x e y para el reticulado
         """
-        return self.operations['^'](a, b)
+        if (x, y) not in self.meet_dic:
+            meet = self.operations['^'](x, y)
+            self.meet_dic[(x, y)] = meet
+            self.meet_dic[(y, x)] = meet
+            return meet
+        return self.meet_dic[(x, y)]
 
     def gt(self, a, b):
         """
+        devuelve la relación > para los elementos a y b del reticulado
+        """
+        return a != b and self.meet(a, b) == b
+
+    def ge(self, a, b):
+        """
         devuelve la relación >= para los elementos a y b del reticulado
         """
-        return self.join(a, b) == a
+        return self.meet(a, b) == b
 
     def lt(self, a, b):
+        """
+        devuelve la relación < para los elementos a y b del reticulado
+        """
+        return a != b and self.meet(a, b) == a
+
+    def le(self, a, b):
         """
         devuelve la relación <= para los elementos a y b del reticulado
         """
@@ -181,10 +205,8 @@ class Lattice(Algebra):
         """
         result = []
         for b in self.universe:
-            if a != b and self.gt(b, a):
-                if any((a != c and
-                        self.gt(c, a) and
-                        c != b and
+            if self.gt(b, a):
+                if any((self.gt(c, a) and
                         self.gt(b, c)) for c in self.universe):
                     continue
                 result.append(b)
@@ -217,10 +239,8 @@ class Lattice(Algebra):
         """
         result = []
         for b in self.universe:
-            if a != b and self.lt(b, a):
-                if any((a != c and
-                        self.lt(c, a) and
-                        c != b and
+            if self.lt(b, a):
+                if any((self.lt(c, a) and
                         self.lt(b, c)) for c in self.universe):
                     continue
                 result.append(b)
@@ -237,6 +257,18 @@ class Lattice(Algebra):
         for a in self.universe:
             result[a] = self.covers_by(a)
         return result
+
+    @property
+    @lru_cache(maxsize=1)
+    def atoms(self):
+        """
+        Devuelve los atomos del reticulado
+
+        >>> from folpy.examples.lattices import *
+        >>> model_to_lattice(rhombus).atoms
+        [1, 2]
+        """
+        return self.covers(self.min())
 
     @lru_cache()
     def is_join_irreducible(self, a):
@@ -380,8 +412,9 @@ class Projective(Lattice):
             universe = self.generators.copy()
         else:
             universe = self.gen_universe()
-        join = self.join_operation(universe)
-        meet = self.meet_operation(universe)
+        self.universe = universe
+        join = self.join_operation()
+        meet = self.meet_operation()
         super().__init__(universe,
                          join,
                          meet,
@@ -389,33 +422,48 @@ class Projective(Lattice):
                          distributive=distributive)
 
     def gen_universe(self):
-        universe = self.generators.copy()
-        universe.append(self.algebra.maxcon())
+        universe = set(self.generators.copy())
         if len(self.generators) > 1:
-            for r in range(2, len(self.generators)):
-                for titas in combinations(self.generators, r):
-                    intersection = self.intersection(titas)
-                    if intersection not in universe:
-                        universe.append(intersection)
-        return universe
+            new_congruences = universe.copy()
+            while new_congruences:
+                new_intersections = set()
+                for old_theta in universe:
+                    for new_theta in new_congruences:
+                        intersection = old_theta & new_theta
+                        if all(intersection != x for x in universe):
+                            new_intersections.add(intersection)
+                universe = set.union(universe, new_intersections)
+                new_congruences = new_intersections
+        universe.add(self.algebra.maxcon())
+        return list(universe)
 
-    def intersection(self, titas):
-        if len(titas) == 0:
-            return self.algebra.maxcon()
-        elif len(titas) == 1:
-            return titas[0]
-        else:
-            intersection = titas[0]
-            for i in range(1, len(titas)):
-                intersection = intersection & titas[i]
-            return intersection
+    def join_op(self, x, y):
+        return min([t for t in self.universe if (t >= x and t >= y)])
 
-    def join_operation(self, universe):
-        return Operation(lambda x, y: min(
-            [t for t in universe if (t >= x and t >= y)]), universe)
+    def meet_op(self, x, y):
+        return x & y
 
-    def meet_operation(self, universe):
-        return Operation(lambda x, y: x & y, universe)
+    def join_operation(self):
+        def function(x, y):
+            return self.join_op(x, y)
+        return Operation(function, d_universe=self.universe, arity=2)
+
+    def meet_operation(self):
+        def function(x, y):
+            return self.meet_op(x, y)
+        return Operation(function, d_universe=self.universe, arity=2)
+
+    def gt(self, x, y):
+        return x > y
+
+    def ge(self, x, y):
+        return x >= y
+
+    def lt(self, x, y):
+        return x < y
+
+    def le(self, x, y):
+        return x <= y
 
 
 class CongruenceLattice(Projective):
@@ -433,8 +481,13 @@ class CongruenceLattice(Projective):
                          name=name,
                          distributive=distributive)
 
-    def join_operation(self, universe):
-        return Operation(lambda x, y: x | y, universe)
+    @property
+    @lru_cache(maxsize=1)
+    def atoms(self):
+        return self.algebra.atoms_congruence_lattice()
+
+    def join_op(self, x, y):
+        return x | y
 
 
 def model_to_lattice(model):
