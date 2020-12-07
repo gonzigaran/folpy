@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
-from itertools import chain
+from itertools import chain, permutations, combinations
 from functools import lru_cache
 
 from ..utils import indent
 from .models import Model, Submodel, Product
 from .morphisms import Homomorphism
 from .modelfunctions import Operation, Constant
-from .congruences import Congruence
+from .congruences import Congruence, Partition
 
 
 class Algebra(Model):
@@ -90,6 +90,103 @@ class Algebra(Model):
         universe = [(x, x) for x in self.universe]
         return Congruence(universe, self)
 
+    def principal_congruences(self):
+        """
+        Función que devuelve el conjunto de las congruencias principales del
+        álgebra
+        """
+        result = []
+        order = []
+        unary_polynomials = self.unary_polynomials()
+        for (a, b) in combinations(self.universe, 2):
+            congruence = self.principal_congruence(a, b, unary_polynomials)
+            n = len(result)
+            order_n = []
+            congruence_in = False
+            for i in range(n):
+                le = result[i] <= congruence
+                ge = result[i] >= congruence
+                if le:
+                    if ge:
+                        congruence_in = True
+                        break
+                    else:
+                        order_n.append((i, n))
+                if ge:
+                    order_n.append((n, i))
+            if not congruence_in:
+                order = order + order_n
+                result.append(congruence)
+
+        return (result, order)
+
+    def principal_congruence(self, a, b, unary_polynomials=None):
+        """
+        Función que devuelve la congruencia principal para el par (a,b).
+        """
+        pairs = [(a, b)]
+        partition = Partition()
+        for x in self.universe:
+            partition.add_element(x)
+        partition.join_blocks(a, b)
+        if not unary_polynomials:
+            unary_polynomials = self.unary_polynomials()
+        while pairs:
+            (x, y) = pairs.pop()
+            for poly in unary_polynomials:
+                r = partition.root(unary_polynomials[poly](x))
+                s = partition.root(unary_polynomials[poly](y))
+                if s != r:
+                    partition.join_blocks(r, s)
+                    pairs.append((r, s))
+        con = partition.to_congruence(self)
+        return con
+
+    def unary_polynomials(self):
+        """
+        Genera el conjunto de todos los polinomios unarios de operaciones del
+        álgebra
+        """
+        unary_polynomials = {}
+        for op_name in self.operations:
+            op = self.operations[op_name]
+            if op.arity() == 1:
+                unary_polynomials[op_name] = op
+            else:
+                arity = op.arity()
+                for j in range(arity):
+                    for vector in permutations(self.universe, arity - 1):
+                        name = op_name + "_" + str(j) + str(vector)
+                        poly = self.unary_polynomial(op_name, j, vector)
+                        unary_polynomials[name] = poly
+        return unary_polynomials
+
+    def unary_polynomial(self, op_name, j, vector):
+        """
+        Genera el polinomio unario del álgebgra para la operación `op_name` y
+        el vector `vector` (tiene que tener ancho = aridad de `op_name` - 1).
+        La variable está en el lugar `j`
+        """
+        op = self.operations[op_name]
+
+        def poly(x):
+            return op(*vector[0:j], x, *vector[j:])
+        return poly
+
+    def atoms_congruence_lattice(self):
+        """
+        Devuelve los atomos del reticulado de congruencia, a partir de los
+        minimales del conjunto de congruencias principales
+        """
+        (principal_congruences, order) = self.principal_congruences()
+        minimals_idx = []
+        for (a, b) in order:
+            if a not in minimals_idx:
+                minimals_idx.append(a)
+            if b in minimals_idx:
+                minimals_idx.remove(b)
+        return [principal_congruences[i] for i in minimals_idx]
+
     def belongs(self, Q):
         """
         Dada una cuasivariedad Q, se fija si el álgebra pertenece a Q. En caso
@@ -122,9 +219,6 @@ class Algebra(Model):
         """
         Devuelve todas las congruencias del algebra
 
-        TODO ver si hay una forma de implementar esta funcion sin generar todas
-        las subalgebras
-
         >>> from folpy.examples.lattices import gen_chain, rhombus
         >>> len(gen_chain(2).congruences())
         2
@@ -135,18 +229,32 @@ class Algebra(Model):
         >>> len(rhombus.congruences())
         4
         """
-        congruences = [self.mincon(), self.maxcon()]
-        subalgebras = self.substructures()
-        for embedding, subalgebra in subalgebras:
-            homomorphisms = self.homomorphisms_to(subalgebra,
-                                                  surj=True)
-            for homomorphism in homomorphisms:
-                con = homomorphism.kernel()
-                if con not in congruences:
-                    congruences.append(con)
+        (principal_congruences, principal_congruences_order) = \
+            self.principal_congruences()
+        n_principal_congruences = len(principal_congruences)
+        new_congruences = principal_congruences.copy()
+        new_congruences_ix = [[i] for i in range(n_principal_congruences)]
+        congruences = principal_congruences.copy()
+        congruences.append(self.mincon())
+        while new_congruences:
+            new_new_congruences = []
+            new_new_congruences_ix = []
+            for k in range(len(new_congruences_ix)):
+                idx = new_congruences_ix[k]
+                last_index = idx[-1]
+                for i in range(last_index + 1, n_principal_congruences):
+                    if any((i, j) in principal_congruences_order for j in idx):
+                        continue
+                    congruence = new_congruences[k]
+                    new_congruence = congruence | principal_congruences[i]
+                    if new_congruence not in congruences:
+                        congruences.append(new_congruence)
+                        new_new_congruences.append(new_congruence)
+                        new_new_congruences_ix.append(idx + [i])
+            new_congruences = new_new_congruences
+            new_congruences_ix = new_new_congruences_ix
         return congruences
 
-    @lru_cache(maxsize=1)
     def congruence_lattice(self):
         """
         Devuelve el reticulado de congruencias

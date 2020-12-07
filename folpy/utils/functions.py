@@ -121,7 +121,7 @@ class Function(object):
     def __init__(self, d, arity=None, d_universe=None):
         # assert issubclass(type(l),list)
         self.func = None
-        self.dict = None
+        self.dict = {}
         self.d_universe = d_universe
         if callable(d):
             assert d_universe, d_universe
@@ -130,7 +130,6 @@ class Function(object):
             self.dict = self.__list_to_dict(d)
         else:
             self.dict = d
-        if self.dict:
             assert all(isinstance(t, tuple) for t in list(self.dict.keys()))
         if arity:
             self.arityval = arity
@@ -156,13 +155,17 @@ class Function(object):
                 "Arity is %s, not %s. Do you need use vector_call?"
                 % (self.arity(), len(args)))
         try:
-            if self.func:
-                if all(x in self.d_universe for x in args):
-                    result = self.func(*args)
-                else:
-                    raise KeyError
-            else:
+            if args in self.dict:
                 result = self.dict[args]
+            else:
+                if self.func:
+                    # if all(x in self.d_universe for x in args):
+                    #     result = self.func(*args)
+                    #     self.dict[args] = result
+                    # else:
+                    #     raise KeyError
+                    result = self.func(*args)
+                    self.dict[args] = result
         except KeyError:
             if self.relation and all(x in self.d_universe for x in args):
                 return False
