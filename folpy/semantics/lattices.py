@@ -422,20 +422,28 @@ class Projective(Lattice):
                          distributive=distributive)
 
     def gen_universe(self):
-        universe = set(self.generators.copy())
+        congruences = self.generators.copy()
         if len(self.generators) > 1:
-            new_congruences = universe.copy()
+            new_congruences = congruences.copy()
+            n = len(congruences)
+            new_congruences_ix = [[i] for i in range(n)]
             while new_congruences:
-                new_intersections = set()
-                for old_theta in universe:
-                    for new_theta in new_congruences:
-                        intersection = old_theta & new_theta
-                        if all(intersection != x for x in universe):
-                            new_intersections.add(intersection)
-                universe = set.union(universe, new_intersections)
+                new_intersections = []
+                new_intersections_ix = []
+                for k in range(len(new_congruences_ix)):
+                    idx = new_congruences_ix[k]
+                    last_index = idx[-1]
+                    for i in range(last_index + 1, n):
+                        congruence = new_congruences[k]
+                        new_congruence = congruence & congruences[i]
+                        if new_congruence not in congruences:
+                            congruences.append(new_congruence)
+                            new_intersections.append(new_congruence)
+                            new_intersections_ix.append(idx + [i])
                 new_congruences = new_intersections
-        universe.add(self.algebra.maxcon())
-        return list(universe)
+                new_congruences_ix = new_intersections_ix
+        congruences.append(self.algebra.maxcon())
+        return congruences
 
     def join_op(self, x, y):
         return min([t for t in self.universe if (t >= x and t >= y)])
