@@ -173,12 +173,15 @@ class Algebra(Model):
             return op(*vector[0:j], x, *vector[j:])
         return poly
 
-    def atoms_congruence_lattice(self):
+    def atoms_congruence_lattice(self):  # PREGUNTAR SOBRE ATOMOS..
+        # INCOMPARABLES? CADENA 2 ELEMENTOS?
         """
         Devuelve los atomos del reticulado de congruencia, a partir de los
         minimales del conjunto de congruencias principales
         """
         (principal_congruences, order) = self.principal_congruences()
+        if order == []:
+            return principal_congruences
         minimals_idx = []
         for (a, b) in order:
             if a not in minimals_idx:
