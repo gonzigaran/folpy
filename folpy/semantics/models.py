@@ -205,8 +205,8 @@ class Model(object):
         >>> from folpy.examples.lattices import *
         >>> rhombus.subuniverse([1],rhombus.type)
         ([1], [[1]])
-        >>> rhombus.subuniverse([1,2],rhombus.type)[0]
-        [0, 1, 2, 3]
+        >>> len(rhombus.subuniverse([1,2],rhombus.type)[0])
+        4
         >>> rhombus.subuniverse([1,2],rhombus.type.subtype(["v"],[]))[0]
         [1, 2, 3]
         """
@@ -216,17 +216,26 @@ class Model(object):
         result.sort()
         partials = [list(subset)]
         increasing = True
+        result_old = []
+        result_new = []
         while increasing:
             increasing = False
             for op in subtype.operations:
                 for x in product(result, repeat=self.operations[op].arity()):
+                    if all(i in result_old for i in x):
+                        continue
                     elem = self.operations[op](*x)
-                    if elem not in result and elem in self.universe:
-                        result.append(elem)
-                        result.sort()
-                        partials.append(list(result))
+                    if (elem not in result and
+                       elem in self.universe and
+                       elem not in result_new):
+                        result_new.append(elem)
+                        result_new.sort()
+                        partials.append(list(result + result_new))
                         increasing = True
-
+            result_old = result.copy()
+            result = result + result_new
+            result_new = []
+        result.sort()
         return (result, partials)
 
     def subuniverses(self, subtype=None):
@@ -248,7 +257,8 @@ class Model(object):
             if subset not in checked:
                 subuniverse, partials = self.subuniverse(subset, subtype)
                 for partial in partials:
-                    checked.append(partial)
+                    if partial not in checked:
+                        checked.append(partial)
                 if subuniverse not in result:
                     result.append(subuniverse)
                     yield subuniverse
