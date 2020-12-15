@@ -5,6 +5,7 @@ from itertools import product
 from functools import lru_cache
 
 from ..syntax.types import AlgebraicType
+from ..utils import latdraw
 
 from .algebras import Algebra, Subalgebra, Quotient, AlgebraProduct
 from .modelfunctions import Operation
@@ -189,6 +190,9 @@ class Lattice(Algebra):
                 break
         self.distributive = distributive
         return distributive
+
+    def draw(self):
+        return latdraw.LatDraw(self)
 
     @lru_cache()
     def covers(self, a):
