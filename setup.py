@@ -14,7 +14,9 @@ setuptools.setup(
     long_description_content_type='text/markdown',
     url="https://github.com/gonzigaran/folpy",
     packages=setuptools.find_packages(),
-    package_data={'folpy': ['utils/minion/minion']},
+    package_data={'folpy': ['utils/minion/minion',
+                            'utils/latdraw/LatDraw.jar',
+                            'utils/latdraw/ToscanaJ.jar']},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
