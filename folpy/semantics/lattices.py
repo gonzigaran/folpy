@@ -5,6 +5,7 @@ from itertools import product
 from functools import lru_cache
 
 from ..syntax.types import AlgebraicType
+from ..utils import latdraw
 
 from .algebras import Algebra, Subalgebra, Quotient, AlgebraProduct
 from .modelfunctions import Operation
@@ -190,6 +191,9 @@ class Lattice(Algebra):
         self.distributive = distributive
         return distributive
 
+    def draw(self):
+        return latdraw.LatDraw(self)
+
     @lru_cache()
     def covers(self, a):
         """
@@ -333,17 +337,12 @@ class Sublattice(Lattice, Subalgebra):
         Dado una subreticulado de un producto, decide si es un producto
         subdirecto
         """
+        assert len(self.universe[0]) == len(self.supermodel.factors)
+        n = len(self.supermodel.factors)
         if isinstance(self.supermodel, LatticeProduct):
-            for i in self.supermodel.indexes():
-                projection = self.supermodel.projection(i)
-                natural_embeddingn = projection.composition(
-                                                    self.natural_embedding()
-                                                    )
-                image_set = set(natural_embeddingn.image_model().universe)
-                factor_set = set(self.supermodel.factors[i].universe)
-                if not image_set == factor_set:
-                    return False
-            return True
+            if all(set([x[i] for x in self.universe]) ==
+                   set(self.supermodel.factors[i].universe) for i in range(n)):
+                return True
         return False
 
 
@@ -361,6 +360,7 @@ class LatticeProduct(AlgebraProduct, Lattice):
                          alg_prod.universe,
                          alg_prod.operations['v'],
                          alg_prod.operations['^'])
+        self.factors = factors
 
 
 class LatticeQuotient(Quotient, Lattice):
@@ -422,20 +422,28 @@ class Projective(Lattice):
                          distributive=distributive)
 
     def gen_universe(self):
-        universe = set(self.generators.copy())
+        congruences = self.generators.copy()
         if len(self.generators) > 1:
-            new_congruences = universe.copy()
+            new_congruences = congruences.copy()
+            n = len(congruences)
+            new_congruences_ix = [[i] for i in range(n)]
             while new_congruences:
-                new_intersections = set()
-                for old_theta in universe:
-                    for new_theta in new_congruences:
-                        intersection = old_theta & new_theta
-                        if all(intersection != x for x in universe):
-                            new_intersections.add(intersection)
-                universe = set.union(universe, new_intersections)
+                new_intersections = []
+                new_intersections_ix = []
+                for k in range(len(new_congruences_ix)):
+                    idx = new_congruences_ix[k]
+                    last_index = idx[-1]
+                    for i in range(last_index + 1, n):
+                        congruence = new_congruences[k]
+                        new_congruence = congruence & congruences[i]
+                        if new_congruence not in congruences:
+                            congruences.append(new_congruence)
+                            new_intersections.append(new_congruence)
+                            new_intersections_ix.append(idx + [i])
                 new_congruences = new_intersections
-        universe.add(self.algebra.maxcon())
-        return list(universe)
+                new_congruences_ix = new_intersections_ix
+        congruences.append(self.algebra.maxcon())
+        return congruences
 
     def join_op(self, x, y):
         return min([t for t in self.universe if (t >= x and t >= y)])

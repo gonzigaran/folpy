@@ -299,17 +299,12 @@ class Subalgebra(Submodel, Algebra):
         """
         Dado una subalgebra de un producto, decide si es un producto subdirecto
         """
+        assert len(self.universe[0]) == len(self.supermodel.factors)
+        n = len(self.supermodel.factors)
         if isinstance(self.supermodel, AlgebraProduct):
-            for i in self.supermodel.indexes():
-                projection = self.supermodel.projection(i)
-                natural_embeddingn = projection.composition(
-                                                    self.natural_embedding()
-                                                    )
-                image_set = set(natural_embeddingn.image_model().universe)
-                factor_set = set(self.supermodel.factors[i].universe)
-                if not image_set == factor_set:
-                    return False
-            return True
+            if all(set([x[i] for x in self.universe]) ==
+                   set(self.supermodel.factors[i].universe) for i in range(n)):
+                return True
         return False
 
 

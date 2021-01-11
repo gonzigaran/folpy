@@ -43,11 +43,11 @@ def powerset(iterable):
     va de mayor a menor.
 
     >>> list(powerset([1,2,3]))
-    [[1, 2, 3], [1, 2], [1, 3], [2, 3], [1], [2], [3], []]
+    [[], [1], [2], [3], [1, 2], [1, 3], [2, 3], [1, 2, 3]]
     """
     s = list(iterable)
     return map(list, chain.from_iterable(combinations(s, r) for r in
-                                         range(len(s) + 1, -1, -1)))
+                                         range(len(s) + 1)))
 
 
 def compose(f, g):
