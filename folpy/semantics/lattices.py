@@ -262,6 +262,41 @@ class Lattice(Algebra):
             result[a] = self.covers_by(a)
         return result
 
+    def covers_graph(self):
+        """
+        devuelve el grafo de covers
+
+        >>> from folpy.examples.lattices import *
+        >>> model_to_lattice(rhombus).covers_graph()
+        Model(
+          Type({},{'cover': 2}),
+          [0, 1, 2, 3],
+          {},
+          {'cover': Relation(
+            [0, 1],
+            [0, 2],
+            [1, 3],
+            [2, 3],
+          )}
+        )
+        """
+        from ..syntax.types import Type
+        from .modelfunctions import Relation
+        from .models import Model
+
+        graph_type = Type({}, {"cover": 2})
+        covers_dict = self.covers_dict
+        relation = {}
+        for x in self.universe:
+            for y in self.universe:
+                if y in covers_dict[x]:
+                    relation[(x, y)] = 1
+                else:
+                    relation[(x, y)] = 0
+        cover = Relation(relation, d_universe=self.universe)
+        graph = Model(graph_type, self.universe, {}, {'cover': cover})
+        return graph
+
     @property
     @lru_cache(maxsize=1)
     def atoms(self):
