@@ -283,9 +283,8 @@ class Lattice(Algebra):
 
         continous, translation = self.continous()
         graph = Graph(len(continous.universe), directed=True)
-        covers_dict = continous.covers_dict
         for x in continous.universe:
-            graph.connect_vertex(x, covers_dict[x])
+            graph.connect_vertex(x, continous.covers(x))
         return graph
 
     def is_isomorphic_graph(self, target):
