@@ -268,34 +268,39 @@ class Lattice(Algebra):
 
         >>> from folpy.examples.lattices import *
         >>> model_to_lattice(rhombus).covers_graph()
-        Model(
-          Type({},{'cover': 2}),
-          [0, 1, 2, 3],
-          {},
-          {'cover': Relation(
-            [0, 1],
-            [0, 2],
-            [1, 3],
-            [2, 3],
-          )}
+        Graph(number_of_vertices=4, directed=True,
+         adjacency_dict = {
+          0: [1, 2],
+          1: [3],
+          2: [3],
+          3: [],
+         },
+         vertex_coloring = [
+         ],
         )
         """
-        from ..syntax.types import Type
-        from .modelfunctions import Relation
-        from .models import Model
+        from pynauty import Graph
 
-        graph_type = Type({}, {"cover": 2})
-        covers_dict = self.covers_dict
-        relation = {}
-        for x in self.universe:
-            for y in self.universe:
-                if y in covers_dict[x]:
-                    relation[(x, y)] = 1
-                else:
-                    relation[(x, y)] = 0
-        cover = Relation(relation, d_universe=self.universe)
-        graph = Model(graph_type, self.universe, {}, {'cover': cover})
+        continous, translation = self.continous()
+        graph = Graph(len(continous.universe), directed=True)
+        for x in continous.universe:
+            graph.connect_vertex(x, continous.covers(x))
         return graph
+
+    def is_isomorphic_graph(self, target):
+        """
+        Devuelve booleano si los modelos self y target son isomorfos
+
+        >>> from folpy.examples.lattices import *
+        >>> c2 = model_to_lattice(gen_chain(2))
+        >>> rhom = model_to_lattice(rhombus)
+        >>> rhom.is_isomorphic_graph(c2*c2)
+        True
+        """
+        if len(self) != len(target):
+            return False
+        from pynauty import isomorphic
+        return isomorphic(self.covers_graph(), target.covers_graph())
 
     @property
     @lru_cache(maxsize=1)

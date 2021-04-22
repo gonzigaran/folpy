@@ -39,7 +39,7 @@ class Quasivariety(object):
         for a in self.generators:
             suba = a.substructures(a.type)
             for s in suba:
-                if len(s[1]) != 1 and not check_isos(s[1], sub, self.type):
+                if len(s[1]) != 1 and not s[1].is_isomorphic_to_any(sub):
                     sub.append(s[1].continous()[0])
         n = len(sub)
         for i in range(n - 1, -1, -1):
@@ -76,7 +76,7 @@ class Quasivariety(object):
             rsi = self.rsi
         else:
             rsi = self.rsi()
-        if check_isos(a, rsi, self.type):
+        if a.is_isomorphic_to_any(rsi):
             return "El álgebra es relativamente subirectamente irreducible"
         else:
             F = set()
@@ -151,13 +151,6 @@ class Quasivariety(object):
                     )}, {})
             return lat
         return "El álgebra no pertenece a Q"
-
-
-def check_isos(a, s, subtype):
-    for b in filter(lambda x: len(a) == len(x), s):
-        iso = a.is_isomorphic(b, subtype)
-        if iso:
-            return iso
 
 
 if __name__ == "__main__":

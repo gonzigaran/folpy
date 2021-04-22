@@ -3,7 +3,7 @@
 
 from . import modelfunctions
 from .algebras import Algebra, Subalgebra, Quotient, AlgebraProduct
-from .classes import Quasivariety, check_isos
+from .classes import Quasivariety
 from .congruences import Congruence, CongruenceSystem, sup_proj
 from .lattices import Lattice, LatticeProduct, Sublattice, LatticeQuotient
 from .models import Model, Submodel, Product
