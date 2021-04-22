@@ -298,6 +298,8 @@ class Lattice(Algebra):
         >>> rhom.is_isomorphic_graph(c2*c2)
         True
         """
+        if len(self) != len(target):
+            return False
         from pynauty import isomorphic
         return isomorphic(self.covers_graph(), target.covers_graph())
 
