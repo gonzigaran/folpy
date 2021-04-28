@@ -262,6 +262,7 @@ class Lattice(Algebra):
             result[a] = self.covers_by(a)
         return result
 
+    @lru_cache(maxsize=1)
     def covers_graph(self):
         """
         devuelve el grafo de covers
@@ -287,6 +288,13 @@ class Lattice(Algebra):
             graph.connect_vertex(x, continous.covers(x))
         return graph
 
+    @property
+    @lru_cache(maxsize=1)
+    def covers_graph_certificate(self):
+        from pynauty import certificate
+
+        return certificate(self.covers_graph())
+
     def is_isomorphic_graph(self, target):
         """
         Devuelve booleano si los modelos self y target son isomorfos
@@ -299,8 +307,7 @@ class Lattice(Algebra):
         """
         if len(self) != len(target):
             return False
-        from pynauty import isomorphic
-        return isomorphic(self.covers_graph(), target.covers_graph())
+        return self.covers_graph_certificate == target.covers_graph_certificate
 
     @property
     @lru_cache(maxsize=1)
