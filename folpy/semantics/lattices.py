@@ -269,7 +269,7 @@ class Lattice(Algebra):
 
         >>> from folpy.examples.lattices import *
         >>> model_to_lattice(rhombus).covers_graph()
-        Graph(number_of_vertices=4, directed=True,
+        Graph(number_of_vertices=4, directed=False,
          adjacency_dict = {
           0: [1, 2],
           1: [3],
@@ -277,13 +277,19 @@ class Lattice(Algebra):
           3: [],
          },
          vertex_coloring = [
+          set([0]),
+          set([1, 2, 3]),
          ],
         )
         """
         from pynauty import Graph
 
         continous, translation = self.continous()
-        graph = Graph(len(continous.universe), directed=True)
+        graph = Graph(
+            len(continous.universe),
+            directed=False,
+            vertex_coloring=[set([0])]
+                )
         for x in continous.universe:
             graph.connect_vertex(x, continous.covers(x))
         return graph
