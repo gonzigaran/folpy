@@ -262,13 +262,14 @@ class Lattice(Algebra):
             result[a] = self.covers_by(a)
         return result
 
+    @lru_cache(maxsize=1)
     def covers_graph(self):
         """
         devuelve el grafo de covers
 
         >>> from folpy.examples.lattices import *
         >>> model_to_lattice(rhombus).covers_graph()
-        Graph(number_of_vertices=4, directed=True,
+        Graph(number_of_vertices=4, directed=False,
          adjacency_dict = {
           0: [1, 2],
           1: [3],
@@ -276,16 +277,29 @@ class Lattice(Algebra):
           3: [],
          },
          vertex_coloring = [
+          set([0]),
+          set([1, 2, 3]),
          ],
         )
         """
         from pynauty import Graph
 
         continous, translation = self.continous()
-        graph = Graph(len(continous.universe), directed=True)
+        graph = Graph(
+            len(continous.universe),
+            directed=False,
+            vertex_coloring=[set([0])]
+                )
         for x in continous.universe:
             graph.connect_vertex(x, continous.covers(x))
         return graph
+
+    @property
+    @lru_cache(maxsize=1)
+    def covers_graph_certificate(self):
+        from pynauty import certificate
+
+        return certificate(self.covers_graph())
 
     def is_isomorphic_graph(self, target):
         """
@@ -299,8 +313,7 @@ class Lattice(Algebra):
         """
         if len(self) != len(target):
             return False
-        from pynauty import isomorphic
-        return isomorphic(self.covers_graph(), target.covers_graph())
+        return self.covers_graph_certificate == target.covers_graph_certificate
 
     @property
     @lru_cache(maxsize=1)

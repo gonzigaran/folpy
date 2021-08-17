@@ -260,7 +260,7 @@ class CongruenceSystem(object):
     """
     Sistema de Congruecias
     Dado una lista de congruencias, una lista de elementos y un sigma generador
-    del proyecto, genera el Sistema de Congruencias para ese proyectivo
+    del proyectivo, genera el Sistema de Congruencias para ese proyectivo
 
     >>> from folpy.examples.lattices import rhombus
     >>> C1 = Congruence([(1, 1),(2, 2),(3, 3),(0, 0),(1, 3),(3, 1),(0, 2),
