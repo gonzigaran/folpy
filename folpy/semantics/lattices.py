@@ -392,11 +392,11 @@ class Sublattice(Lattice, Subalgebra):
         """
         assert len(self.universe[0]) == len(self.supermodel.factors)
         n = len(self.supermodel.factors)
-        if isinstance(self.supermodel, LatticeProduct):
-            if all(set([x[i] for x in self.universe]) ==
-                   set(self.supermodel.factors[i].universe) for i in range(n)):
-                return True
-        return False
+        assert isinstance(self.supermodel, LatticeProduct)
+        if any(set([x[i] for x in self.universe]) !=
+                set(self.supermodel.factors[i].universe) for i in range(n)):
+            return False
+        return True
 
 
 class LatticeProduct(AlgebraProduct, Lattice):
