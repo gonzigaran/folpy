@@ -295,7 +295,7 @@ class Lattice(Algebra):
             graph.connect_vertex(x, continous.covers(x))
         return graph
 
-    def covers_graph_certificate(self):
+    def get_certificate(self):
         if not self.certificate:
             from pynauty import certificate
 
@@ -314,7 +314,7 @@ class Lattice(Algebra):
         """
         if len(self) != len(target):
             return False
-        return self.covers_graph_certificate == target.covers_graph_certificate
+        return self.get_certificate() == target.get_certificate()
 
     @property
     @lru_cache(maxsize=1)
