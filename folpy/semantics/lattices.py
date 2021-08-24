@@ -27,6 +27,7 @@ class Lattice(Algebra):
         self.distributive = distributive
         self.join_dic = {(x, x): x for x in self.universe}
         self.meet_dic = {(x, x): x for x in self.universe}
+        self.certificate = None
 
     def __mul__(self, other):
         """
@@ -294,12 +295,12 @@ class Lattice(Algebra):
             graph.connect_vertex(x, continous.covers(x))
         return graph
 
-    @property
-    @lru_cache(maxsize=1)
     def covers_graph_certificate(self):
-        from pynauty import certificate
+        if not self.certificate:
+            from pynauty import certificate
 
-        return certificate(self.covers_graph())
+            self.certificate = certificate(self.covers_graph())
+        return self.certificate
 
     def is_isomorphic_graph(self, target):
         """
