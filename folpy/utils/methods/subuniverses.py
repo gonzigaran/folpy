@@ -54,22 +54,24 @@ def subuniverses(model, subtype=None, proper=True):
 
     >>> from folpy.examples.lattices import *
     >>> len(list(subuniverses(rhombus, rhombus.type)))
-    12
+    11
     """
     if not subtype:
         subtype = model.type
     result = []
     subsets = powerset(model.universe)
     checked = [[]]
-    if proper:
-        checked.append(model.universe)
     for subset in subsets:
+        if proper and (len(subset) == len(model.universe)):
+            continue
         if subset in checked:
             continue
         subuniv, partials = subuniverse(model, subset, subtype)
         for partial in partials:
             if partial not in checked:
                 checked.append(partial)
+        if proper and (len(subuniv) == len(model.universe)):
+            continue
         if subuniv not in result:
             result.append(subuniv)
             yield subuniv
@@ -79,4 +81,13 @@ def is_subuniverse(model, subset, subtype=None):
     """
     Dado un conjunto, decide si es subuniverso o no
     """
-    return len(subset) == len(subuniverse(model, subset, subtype=subtype))
+    return len(subset) == len(subuniverse(model, subset, subtype=subtype)[0])
+
+
+def is_subuniverse_for_lattices(model, possible_subuniverse):
+    for x in product(possible_subuniverse, repeat=2):
+        if model.join(*x) not in possible_subuniverse:
+            return False
+        if model.meet(*x) not in possible_subuniverse:
+            return False
+    return True

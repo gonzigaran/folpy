@@ -5,7 +5,7 @@ from itertools import chain, product
 
 from ..utils import indent, minion
 from ..utils.methods import (
-                                substructures,
+                                substructures_by_maximals,
                                 subuniverse,
                                 subuniverses,
                                 is_subuniverse
@@ -226,7 +226,7 @@ class Model(object):
 
         >>> from folpy.examples.lattices import *
         >>> len(list(rhombus.subuniverses(rhombus.type)))
-        12
+        11
         """
         return subuniverses(self, subtype=subtype, proper=proper)
 
@@ -270,17 +270,15 @@ class Model(object):
         No devuelve las subestructuras cuyos universos estan en without.
 
         >>> from folpy.examples.lattices import *
-        >>> len(list(rhombus.substructures(rhombus.type)))
-        12
-        >>> len(list(rhombus.substructures(rhombus.type.subtype(["v"],[]))))
-        13
-        >>> len(list(rhombus.substructures(rhombus.type.subtype([],[]))))
-        14
+        >>> len(list(rhombus.substructures()))
+        11
         """
-        return substructures(
+        return substructures_by_maximals(
             self,
+            supermodel=self,
+            filter_isos=False,
+            filter_subdirect=False,
             subtype=subtype,
-            without=without,
             proper=proper)
 
     def join_to_le(self):
