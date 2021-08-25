@@ -1,4 +1,4 @@
-from itertools import combinations, product
+# from itertools import combinations, product
 
 from .subuniverses import subuniverses
 
@@ -11,13 +11,14 @@ def substructures(model, subtype=None, without=[], proper=True):
     No devuelve las subestructuras cuyos universos estan en without.
 
     >>> from folpy.examples.lattices import *
+    >>> empty_subtype = rhombus.type.subtype([],[])
     >>> len(list(substructures(rhombus, rhombus.type)))
     12
     >>> len(list(substructures(rhombus, rhombus.type.subtype(["v"],[]))))
     13
-    >>> len(list(substructures(rhombus, rhombus.type.subtype([],[]))))
+    >>> len(list(substructures(rhombus, empty_subtype)))
     14
-    >>> len(list(substructures(rhombus, rhombus.type.subtype([],[]),proper=False)))
+    >>> len(list(substructures(rhombus, empty_subtype,proper=False)))
     15
     """
     if not subtype:
