@@ -3,7 +3,13 @@
 
 from itertools import chain, product
 
-from ..utils import indent, powerset, minion
+from ..utils import indent, minion
+from ..utils.methods import (
+                                substructures,
+                                subuniverse,
+                                subuniverses,
+                                is_subuniverse
+                            )
 from .morphisms import Embedding, Homomorphism
 from .modelfunctions import (
     Relation,
@@ -210,35 +216,9 @@ class Model(object):
         >>> rhombus.subuniverse([1,2],rhombus.type.subtype(["v"],[]))[0]
         [1, 2, 3]
         """
-        if not subtype:
-            subtype = self.type
-        result = subset
-        result.sort()
-        partials = [list(subset)]
-        increasing = True
-        result_old = []
-        result_new = []
-        while increasing:
-            increasing = False
-            for op in subtype.operations:
-                for x in product(result, repeat=self.operations[op].arity()):
-                    if all(i in result_old for i in x):
-                        continue
-                    elem = self.operations[op](*x)
-                    if (elem not in result and
-                       elem in self.universe and
-                       elem not in result_new):
-                        result_new.append(elem)
-                        result_new.sort()
-                        partials.append(list(result + result_new))
-                        increasing = True
-            result_old = result.copy()
-            result = result + result_new
-            result_new = []
-        result.sort()
-        return (result, partials)
+        return subuniverse(self, subset, subtype=subtype)
 
-    def subuniverses(self, subtype=None):
+    def subuniverses(self, subtype=None, proper=True):
         """
         NO DEVUELVE EL SUBUNIVERSO VACIO
         Generador que va devolviendo los subuniversos.
@@ -248,20 +228,13 @@ class Model(object):
         >>> len(list(rhombus.subuniverses(rhombus.type)))
         12
         """
-        if not subtype:
-            subtype = self.type
-        result = []
-        subsets = powerset(self.universe)
-        checked = [[]]
-        for subset in subsets:
-            if subset not in checked:
-                subuniverse, partials = self.subuniverse(subset, subtype)
-                for partial in partials:
-                    if partial not in checked:
-                        checked.append(partial)
-                if subuniverse not in result:
-                    result.append(subuniverse)
-                    yield subuniverse
+        return subuniverses(self, subtype=subtype, proper=proper)
+
+    def is_subuniverse(self, subset, subtype=None):
+        """
+        Dado un conjunto, decide si es subuniverso o no
+        """
+        return is_subuniverse(self, subset, subtype=subtype)
 
     def restrict(self, subuniverse, subtype=None):
         """
@@ -283,20 +256,17 @@ class Model(object):
 
     def substructure(self, subuniverse, subtype=None):
         """
-        Devuelve una subestructura y un embedding.
+        Devuelve una subestructura a partir de un subuniverso.
         """
         if not subtype:
             subtype = self.type
-        substructure = self.restrict(subuniverse)
-        emb = Embedding(
-            {(k,): k for k in subuniverse}, substructure, self, subtype)
-        return (emb, substructure)
+        return self.restrict(subuniverse, subtype=subtype)
 
-    def substructures(self, subtype=None, without=[]):
+    def substructures(self, subtype=None, without=[], proper=True):
         """
         Generador que va devolviendo las subestructuras.
         Intencionalmente no filtra por isomorfismos.
-        Devuelve una subestructura y un embedding.
+        Devuelve una subestructura.
         No devuelve las subestructuras cuyos universos estan en without.
 
         >>> from folpy.examples.lattices import *
@@ -305,18 +275,13 @@ class Model(object):
         >>> len(list(rhombus.substructures(rhombus.type.subtype(["v"],[]))))
         13
         >>> len(list(rhombus.substructures(rhombus.type.subtype([],[]))))
-        15
+        14
         """
-        if not subtype:
-            subtype = self.type
-        without = list(map(set, without))
-        for sub in self.subuniverses(subtype):
-            if set(sub) not in without:
-                # parece razonable que el modelo de una subestructura conserve
-                # todas las relaciones y operaciones
-                # independientemente de el subtipo del que se buscan
-                # embeddings.
-                yield self.substructure(sub, subtype)
+        return substructures(
+            self,
+            subtype=subtype,
+            without=without,
+            proper=proper)
 
     def join_to_le(self):
         """
