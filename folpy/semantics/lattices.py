@@ -302,14 +302,14 @@ class Lattice(Algebra):
             self.certificate = certificate(self.covers_graph())
         return self.certificate
 
-    def is_isomorphic_graph(self, target):
+    def is_isomorphic(self, target):
         """
         Devuelve booleano si los modelos self y target son isomorfos
 
         >>> from folpy.examples.lattices import *
         >>> c2 = model_to_lattice(gen_chain(2))
         >>> rhom = model_to_lattice(rhombus)
-        >>> rhom.is_isomorphic_graph(c2*c2)
+        >>> rhom.is_isomorphic(c2*c2)
         True
         """
         if len(self) != len(target):
