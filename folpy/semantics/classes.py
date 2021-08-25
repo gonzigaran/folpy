@@ -39,8 +39,8 @@ class Quasivariety(object):
         for a in self.generators:
             suba = a.substructures(a.type)
             for s in suba:
-                if len(s[1]) != 1 and not s[1].is_isomorphic_to_any(sub):
-                    sub.append(s[1].continous()[0])
+                if len(s) != 1 and not s.is_isomorphic_to_any(sub):
+                    sub.append(s.continous()[0])
         n = len(sub)
         for i in range(n - 1, -1, -1):
             ker = {(x, y) for x in sub[i].universe for y in sub[i].universe}
