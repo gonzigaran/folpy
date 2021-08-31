@@ -27,6 +27,7 @@ class Lattice(Algebra):
         self.distributive = distributive
         self.join_dic = {(x, x): x for x in self.universe}
         self.meet_dic = {(x, x): x for x in self.universe}
+        self.certificate = None
 
     def __mul__(self, other):
         """
@@ -294,26 +295,26 @@ class Lattice(Algebra):
             graph.connect_vertex(x, continous.covers(x))
         return graph
 
-    @property
-    @lru_cache(maxsize=1)
-    def covers_graph_certificate(self):
-        from pynauty import certificate
+    def get_certificate(self):
+        if not self.certificate:
+            from pynauty import certificate
 
-        return certificate(self.covers_graph())
+            self.certificate = certificate(self.covers_graph())
+        return self.certificate
 
-    def is_isomorphic_graph(self, target):
+    def is_isomorphic(self, target):
         """
         Devuelve booleano si los modelos self y target son isomorfos
 
         >>> from folpy.examples.lattices import *
         >>> c2 = model_to_lattice(gen_chain(2))
         >>> rhom = model_to_lattice(rhombus)
-        >>> rhom.is_isomorphic_graph(c2*c2)
+        >>> rhom.is_isomorphic(c2*c2)
         True
         """
         if len(self) != len(target):
             return False
-        return self.covers_graph_certificate == target.covers_graph_certificate
+        return self.get_certificate() == target.get_certificate()
 
     @property
     @lru_cache(maxsize=1)
