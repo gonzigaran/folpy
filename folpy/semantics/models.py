@@ -262,24 +262,31 @@ class Model(object):
             subtype = self.type
         return self.restrict(subuniverse, subtype=subtype)
 
-    def substructures(self, subtype=None, without=[], proper=True):
+    def substructures(
+            self,
+            filter_isos=False,
+            filter_subdirect=False,
+            subtype=None,
+            proper=True,
+            without=[]):
         """
         Generador que va devolviendo las subestructuras.
-        Intencionalmente no filtra por isomorfismos.
         Devuelve una subestructura.
-        No devuelve las subestructuras cuyos universos estan en without.
 
         >>> from folpy.examples.lattices import *
         >>> len(list(rhombus.substructures()))
         11
+        >>> len(list(gen_chain(4).substructures()))
+        14
         """
         return substructures_by_maximals(
             self,
             supermodel=self,
-            filter_isos=False,
-            filter_subdirect=False,
+            filter_isos=filter_isos,
+            filter_subdirect=filter_subdirect,
             subtype=subtype,
-            proper=proper)
+            proper=proper,
+            without=without)
 
     def join_to_le(self):
         """

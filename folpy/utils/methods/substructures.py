@@ -3,7 +3,14 @@ from itertools import combinations
 from .subuniverses import subuniverses, is_subuniverse
 
 
-def substructures(model, subtype=None, without=[], proper=True):
+def substructures(
+        model,
+        supermodel=None,
+        filter_isos=False,
+        filter_subdirect=False,
+        subtype=None,
+        proper=True,
+        without=[]):
     """
     Generador que va devolviendo las subestructuras.
     Intencionalmente no filtra por isomorfismos.
@@ -11,14 +18,17 @@ def substructures(model, subtype=None, without=[], proper=True):
     No devuelve las subestructuras cuyos universos estan en without.
 
     >>> from folpy.examples.lattices import *
+    >>> one_op_subtype = rhombus.type.subtype(["^"],[])
     >>> empty_subtype = rhombus.type.subtype([],[])
     >>> len(list(substructures(rhombus, rhombus.type)))
     11
-    >>> len(list(substructures(rhombus, rhombus.type.subtype(["v"],[]))))
-    12
-    >>> len(list(substructures(rhombus, empty_subtype)))
+    >>> len(list(substructures(gen_chain(4), rhombus.type)))
     14
-    >>> len(list(substructures(rhombus, empty_subtype, proper=False)))
+    >>> len(list(substructures(rhombus, subtype=one_op_subtype)))
+    12
+    >>> len(list(substructures(rhombus, subtype=empty_subtype)))
+    14
+    >>> len(list(substructures(rhombus, subtype=empty_subtype, proper=False)))
     15
     """
     if not subtype:
@@ -35,7 +45,8 @@ def substructures_by_maximals(
         filter_isos=True,
         filter_subdirect=False,
         subtype=None,
-        proper=True):
+        proper=True,
+        without=[]):
     """
     Generador de subestructuras que filtra por isomorfismos y tiene opcion
     para quedarse solo con los subdirectos (para esto el modelo tiene que ser
@@ -43,6 +54,7 @@ def substructures_by_maximals(
 
     TODO implementar lo de filter_subdirect
     TODO implementar lo de subtype
+    TODO implementar lo de without
     """
     if not supermodel:
         supermodel = model

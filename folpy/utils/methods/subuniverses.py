@@ -66,7 +66,7 @@ def subuniverses(model, subtype=None, proper=True):
             continue
         if subset in checked:
             continue
-        subuniv, partials = subuniverse(model, subset, subtype)
+        subuniv, partials = subuniverse(model, subset, subtype=subtype)
         for partial in partials:
             if partial not in checked:
                 checked.append(partial)
