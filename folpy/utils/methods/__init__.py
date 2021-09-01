@@ -12,4 +12,4 @@ from .subuniverses import (
                             is_subuniverse_for_lattices
                           )
 
-substructures = substructures_updown
+substructures = substructures_by_maximals
