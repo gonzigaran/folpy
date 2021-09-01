@@ -22,8 +22,9 @@ class Quasivariety(object):
                  el mismo tipo"
         self.generators = generators
         self.name = name
+        self.rsi = None
 
-    def rsi(self):
+    def generate_rsi(self):
         """
         Dada un conjunto de álgebras, devuelve el conjunto de álgebras
          relativamente subdirectamente irreducibles para la cuasivariedad
@@ -31,13 +32,16 @@ class Quasivariety(object):
 
         >>> from folpy.examples.lattices import gen_chain
         >>> Q = Quasivariety([gen_chain(2), gen_chain(3), gen_chain(4)])
-        >>> len(Q.rsi())
+        >>> len(Q.generate_rsi())
         1
+        >>> bool((Q.generate_rsi())[0].is_isomorphic(gen_chain(2)))
+        True
         """
-
+        if self.rsi:
+            return self.rsi
         sub = []
         for a in self.generators:
-            suba = a.substructures(a.type)
+            suba = a.substructures()
             for s in suba:
                 if len(s) != 1 and not s.is_isomorphic_to_any(sub):
                     sub.append(s.continous()[0])
@@ -60,7 +64,7 @@ class Quasivariety(object):
                 if t:
                     break
         self.rsi = sub
-        return sub
+        return self.rsi
 
     def contains(self, a):
         """
@@ -72,10 +76,7 @@ class Quasivariety(object):
         >>> type(Q.contains(rhombus)) == Homomorphism
         True
         """
-        if type(self.rsi) == list:
-            rsi = self.rsi
-        else:
-            rsi = self.rsi()
+        rsi = self.generate_rsi()
         if a.is_isomorphic_to_any(rsi):
             return "El álgebra es relativamente subirectamente irreducible"
         else:

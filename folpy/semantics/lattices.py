@@ -6,6 +6,7 @@ from functools import lru_cache
 
 from ..syntax.types import AlgebraicType
 from ..utils import latdraw
+from ..utils.methods import is_subuniverse_for_lattices
 
 from .algebras import Algebra, Subalgebra, Quotient, AlgebraProduct
 from .modelfunctions import Operation
@@ -315,6 +316,12 @@ class Lattice(Algebra):
         if len(self) != len(target):
             return False
         return self.get_certificate() == target.get_certificate()
+
+    def is_subuniverse(self, subset, subtype=None):
+        """
+        Dado un conjunto, decide si es subuniverso o no
+        """
+        return is_subuniverse_for_lattices(self, subset, subtype=subtype)
 
     @property
     @lru_cache(maxsize=1)

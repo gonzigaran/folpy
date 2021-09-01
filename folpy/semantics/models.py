@@ -5,7 +5,7 @@ from itertools import chain, product
 
 from ..utils import indent, minion
 from ..utils.methods import (
-                                substructures_by_maximals,
+                                substructures,
                                 subuniverse,
                                 subuniverses,
                                 is_subuniverse
@@ -279,9 +279,8 @@ class Model(object):
         >>> len(list(gen_chain(4).substructures()))
         14
         """
-        return substructures_by_maximals(
+        return substructures(
             self,
-            supermodel=self,
             filter_isos=filter_isos,
             filter_subdirect=filter_subdirect,
             subtype=subtype,
