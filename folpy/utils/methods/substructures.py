@@ -185,7 +185,8 @@ def substructures_by_maximals(
                 if any(x.issubset(subset) for x in complements_subsets):
                     continue
                 has_subs_of_this_len = True
-                possible_subuniverse = [x for x in model.universe if x not in subset]
+                possible_subuniverse = [x for x in model.universe
+                                        if x not in subset]
                 if is_subuniverse(model, possible_subuniverse):
                     new_substructure = supermodel.restrict(possible_subuniverse)
                     complements_subsets.append(supersubset)
