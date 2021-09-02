@@ -151,7 +151,7 @@ class Lattice(Algebra):
                         operations['v'],
                         operations['^']), translation)
 
-    def restrict(self, subuniverse):
+    def restrict(self, subuniverse, subtype=None):
         """
         Devuelve la restriccion del algebra al subuniverso que se supone
         que es cerrado en en subtype
