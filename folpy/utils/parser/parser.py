@@ -28,9 +28,12 @@ class Parser(object):
     TODO preprocess
     TODO name
 
-    >>> from folpy.semantics import Algebra, Model
+    >>> from folpy.semantics import Algebra, Model, Lattice
     >>> p = Parser("folpy/utils/parser/example.model")
     >>> type(p.parse()) == Model
+    True
+    >>> p = Parser("folpy/utils/parser/example_product.model")
+    >>> type(p.parse()) == Lattice
     True
     """
 
@@ -84,7 +87,7 @@ class Parser(object):
 
     def get_state(self, line):
         assert self.current_state is None
-        line_list = line.split()
+        line_list = line.replace(", ", ",").split()
         if (not line_list[0].isdigit()) and len(line_list) == 3:
             return 'RELATION'
         elif (not line_list[0].isdigit()) and len(line_list) == 2:
@@ -94,11 +97,11 @@ class Parser(object):
 
     def parse_universe(self, line):
         assert self.universe is None
-        self.universe = [eval(i) for i in line.split()]
+        self.universe = [eval(i) for i in line.replace(", ", ",").split()]
         self.current_state = None
 
     def parse_relation(self, line):
-        line_list = line.split()
+        line_list = line.replace(", ", ",").split()
         if line_list[0].isdigit():
             if not all(value.isdigit() for value in line_list):
                 raise ParserError(self.current_line,
@@ -135,9 +138,9 @@ class Parser(object):
             self.current_sym = None
 
     def parse_operation(self, line):
-        line_list = line.split()
-        if line_list[0].isdigit():
-            if not all(value.isdigit() for value in line_list):
+        line_list = line.replace(", ", ",").split()
+        if self.can_eval(line_list[0]):
+            if not all(self.can_eval(value) for value in line_list):
                 raise ParserError(self.current_line,
                                   "Bad definition of operation tuple")
             self.parse_operation_tuple(line_list)
@@ -163,7 +166,7 @@ class Parser(object):
         if len(line_list) != op_arity + 1:
             raise ParserError(self.current_line,
                               "Operation %s arity doesn't match" % op_name)
-        line_list = [int(val) for val in line_list]
+        line_list = [eval(val) for val in line_list]
         tuple_value = tuple(line_list[:op_arity])
         image = line_list[op_arity]
         self.operations[op_name][tuple_value] = image
@@ -201,6 +204,17 @@ class Parser(object):
                          self.universe,
                          self.operations,
                          self.relations)
+
+    def can_eval(self, s):
+        try:
+            eval(s)
+            return True
+        except ValueError:
+            return False
+        except NameError:
+            return False
+        except SyntaxError:
+            return False
 
 
 if __name__ == "__main__":
