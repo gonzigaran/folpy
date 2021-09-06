@@ -91,3 +91,11 @@ def is_subuniverse_for_lattices(model, possible_subuniverse):
         if model.meet(*x) not in possible_subuniverse:
             return False
     return True
+
+
+def is_subdirect_subuniverse(subuniverse, universe):
+    assert type(universe[0]) == tuple, "No es un producto"
+    universes = [set(x) for x in zip(*universe)]
+    subuniverses = [set(x) for x in zip(*subuniverse)]
+
+    return universes == subuniverses
