@@ -6,6 +6,7 @@ from functools import lru_cache
 
 from ..syntax.types import AlgebraicType
 from ..utils import latdraw
+from ..utils.methods import is_subuniverse_for_lattices
 
 from .algebras import Algebra, Subalgebra, Quotient, AlgebraProduct
 from .modelfunctions import Operation
@@ -150,7 +151,7 @@ class Lattice(Algebra):
                         operations['v'],
                         operations['^']), translation)
 
-    def restrict(self, subuniverse):
+    def restrict(self, subuniverse, subtype=None):
         """
         Devuelve la restriccion del algebra al subuniverso que se supone
         que es cerrado en en subtype
@@ -302,19 +303,25 @@ class Lattice(Algebra):
             self.certificate = certificate(self.covers_graph())
         return self.certificate
 
-    def is_isomorphic_graph(self, target):
+    def is_isomorphic(self, target):
         """
         Devuelve booleano si los modelos self y target son isomorfos
 
         >>> from folpy.examples.lattices import *
         >>> c2 = model_to_lattice(gen_chain(2))
         >>> rhom = model_to_lattice(rhombus)
-        >>> rhom.is_isomorphic_graph(c2*c2)
+        >>> rhom.is_isomorphic(c2*c2)
         True
         """
         if len(self) != len(target):
             return False
         return self.get_certificate() == target.get_certificate()
+
+    def is_subuniverse(self, subset, subtype=None):
+        """
+        Dado un conjunto, decide si es subuniverso o no
+        """
+        return is_subuniverse_for_lattices(self, subset, subtype=subtype)
 
     @property
     @lru_cache(maxsize=1)
