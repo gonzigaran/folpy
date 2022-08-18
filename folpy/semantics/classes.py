@@ -41,6 +41,7 @@ class Quasivariety(object):
             return self.rsi
         sub = []
         for a in self.generators:
+            sub.append(a)
             suba = a.substructures()
             for s in suba:
                 if len(s) != 1 and not s.is_isomorphic_to_any(sub):
