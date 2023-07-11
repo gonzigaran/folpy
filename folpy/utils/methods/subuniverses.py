@@ -1,5 +1,4 @@
 from itertools import product
-
 from .. import powerset
 
 
@@ -45,7 +44,6 @@ def subuniverse(model, subset, subtype=None):
     result.sort()
     return (result, partials)
 
-
 def subuniverses(model, subtype=None, proper=True):
     """
     NO DEVUELVE EL SUBUNIVERSO VACIO
@@ -54,6 +52,76 @@ def subuniverses(model, subtype=None, proper=True):
 
     >>> from folpy.examples.lattices import *
     >>> len(list(subuniverses(rhombus, rhombus.type)))
+    11
+    """
+    if not subtype:
+        subtype = model.type
+    
+    class Node(object):
+        """
+        Tipo auxiliar para este algoritmo
+        """
+        def __init__(self, closed, incomparables, generators) -> None:
+            self.closed = closed
+            self.incomparables = incomparables
+            self.generators = generators
+        
+        def join(self, other):
+            subset = set(self.closed).union(set(other.closed))
+            closed = subuniverse(model, list(subset), subtype=subtype)[0]
+            inc = [i for i in self.incomparables if i in other.incomparables and i not in closed]
+            gen = self.generators + other.generators
+            return Node(closed, inc, gen)
+        
+        def copy(self):
+            from copy import deepcopy
+            return deepcopy(self)
+
+    
+    one_gen_subuniverses = {}
+    for x in model.universe:
+        subuniv = subuniverse(model, [x], subtype=subtype)[0]
+        if subuniv not in one_gen_subuniverses.values():
+            one_gen_subuniverses[x] = subuniv
+            if not (len(subuniv) == len(model.universe) and proper):
+                yield subuniv
+
+    generators = list(one_gen_subuniverses.keys())
+    one_gen_nodes = {}
+    nodes_queue = []
+
+    while generators:
+        g = generators.pop(0)
+        incomparables = [x for x in generators if not 
+                         (x in one_gen_subuniverses[g] or 
+                          g in one_gen_subuniverses[x])]
+        node = Node(one_gen_subuniverses[g], incomparables, [g])
+        one_gen_nodes[g] = node
+        nodes_queue.append(node.copy())
+
+    subuniverses = list(one_gen_subuniverses.values())
+
+    while nodes_queue:
+        node = nodes_queue.pop(0)
+        while node.incomparables:
+            g = node.incomparables.pop(0)
+            new_node = node.join(one_gen_nodes[g])
+            if new_node.closed not in subuniverses:
+                if new_node.incomparables:
+                    nodes_queue.append(new_node)
+                subuniverses.append(new_node.closed)
+                if not (len(new_node.closed) == len(model.universe) and proper):
+                    yield new_node.closed
+
+
+def subuniverses_exhausted(model, subtype=None, proper=True):
+    """
+    NO DEVUELVE EL SUBUNIVERSO VACIO
+    Generador que va devolviendo los subuniversos.
+    Intencionalmente no filtra por isomorfismos.
+
+    >>> from folpy.examples.lattices import *
+    >>> len(list(subuniverses_exhausted(rhombus, rhombus.type)))
     11
     """
     if not subtype:

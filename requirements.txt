@@ -1,4 +1,4 @@
-flake8==3.8.3
-numpy==1.22.0
-pytest==5.4.3
+flake8
+numpy
+pytest
 pynauty --no-binary pynauty 

@@ -21,8 +21,12 @@ def substructures_downup(
     >>> empty = rhombus.type.subtype([],[])
     >>> len(list(substructures_downup(rhombus, rhombus.type)))
     11
+    >>> len(list(substructures_downup(rhombus, rhombus.type, proper=False)))
+    12
     >>> len(list(substructures_downup(gen_chain(4), rhombus.type)))
     14
+    >>> len(list(substructures_downup(gen_chain(4), rhombus.type, proper=False)))
+    15
     >>> len(list(substructures_downup(rhombus, subtype=one_op_subtype)))
     12
     >>> len(list(substructures_downup(rhombus, subtype=empty)))
@@ -99,9 +103,17 @@ def substructures_by_maximals(
     """
     Generador de subestructuras a partir de iteración de maximales.
 
+    TODO implementar proper
+    TODO implementar subtype
+    TODO implementar without
+    
     >>> from folpy.examples.lattices import *
-    >>> len(list(substructures_by_maximals(rhombus)))
+    >>> one_op_subtype = rhombus.type.subtype(["^"],[])
+    >>> empty = rhombus.type.subtype([],[])
+    >>> len(list(substructures_by_maximals(rhombus, subtype=rhombus.type)))
     11
+    >>> len(list(substructures_by_maximals(gen_chain(4), subtype=rhombus.type)))
+    14
     """
     if filter_subdirect:
         assert len(model.factors) > 1
