@@ -27,17 +27,27 @@ def subuniverse(model, subset, subtype=None):
     while increasing:
         increasing = False
         for op in subtype.operations:
-            for x in product(result, repeat=model.operations[op].arity()):
-                if all(i in result_old for i in x):
-                    continue
-                elem = model.operations[op](*x)
+            if model.operations[op].arity() == 0:
+                elem = model.operations[op]()
                 if (elem not in result and
-                        elem in model.universe and
-                        elem not in result_new):
+                    elem in model.universe and
+                    elem not in result_new):
                     result_new.append(elem)
                     result_new.sort()
                     partials.append(list(result + result_new))
                     increasing = True
+            else:
+                for x in product(result, repeat=model.operations[op].arity()):
+                    if all(i in result_old for i in x):
+                        continue
+                    elem = model.operations[op](*x)
+                    if (elem not in result and
+                        elem in model.universe and
+                        elem not in result_new):
+                        result_new.append(elem)
+                        result_new.sort()
+                        partials.append(list(result + result_new))
+                        increasing = True
         result_old = result.copy()
         result = result + result_new
         result_new = []
@@ -51,6 +61,10 @@ def subuniverses(model, subtype=None, proper=True):
     Intencionalmente no filtra por isomorfismos.
 
     >>> from folpy.examples.lattices import *
+    >>> from folpy.utils.parser.parser import Parser
+    >>> c2 = Parser("folpy/examples/lattices/2chain.model").parse()
+    >>> len(list(subuniverses(c2, c2.type, proper=False)))
+    1
     >>> len(list(subuniverses(rhombus, rhombus.type)))
     11
     """
