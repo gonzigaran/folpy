@@ -41,6 +41,7 @@ class Operation(Function):
         return Operation(operation,
                          d_universe=list(range(len(renames))),
                          arity=self.arity())
+    
 
 
 class Relation(Function):
