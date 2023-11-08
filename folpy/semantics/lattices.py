@@ -335,6 +335,18 @@ class Lattice(Algebra):
         """
         return self.covers(self.min())
 
+    @property
+    @lru_cache(maxsize=1)
+    def coatoms(self):
+        """
+        Devuelve los coatomos del reticulado
+
+        >>> from folpy.examples.lattices import *
+        >>> model_to_lattice(rhombus).coatoms
+        [1, 2]
+        """
+        return self.covers_by(self.max())
+
     @lru_cache()
     def is_join_irreducible(self, a):
         """
