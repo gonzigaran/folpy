@@ -9,7 +9,7 @@ from ..utils import latdraw
 from ..utils.methods import is_subuniverse_for_lattices
 
 from .algebras import Algebra, Subalgebra, Quotient, AlgebraProduct
-from .modelfunctions import Operation
+from .modelfunctions import Operation, Operation_decorator
 
 
 class Lattice(Algebra):
@@ -320,8 +320,13 @@ class Lattice(Algebra):
     def is_subuniverse(self, subset, subtype=None):
         """
         Dado un conjunto, decide si es subuniverso o no
+        >>> from folpy.examples.lattices import *
+        >>> model_to_lattice(rhombus).is_subuniverse([1,2])
+        False
+        >>> model_to_lattice(rhombus).is_subuniverse([0,1])
+        True
         """
-        return is_subuniverse_for_lattices(self, subset, subtype=subtype)
+        return is_subuniverse_for_lattices(self, subset)
 
     @property
     @lru_cache(maxsize=1)
@@ -584,6 +589,68 @@ def model_to_lattice(model):
         name=model.name
         )
 
+
+def poset_to_lattice(poset):
+    """
+    Genera las operaciones de reticulado a partir de la relacion <=
+    Se asume que el poset tiene minimo y maximo
+
+    >>> from folpy.semantics.lattices import poset_to_lattice
+    >>> from folpy.examples.posets import rhombus
+    >>> poset_to_lattice(rhombus).operations['v']
+    Function(
+      [0, 0] -> 0,
+      [0, 1] -> 1,
+      [0, 2] -> 2,
+      [0, 3] -> 3,
+      [1, 0] -> 1,
+      [1, 1] -> 1,
+      [1, 2] -> 1,
+      [1, 3] -> 1,
+      [2, 0] -> 2,
+      [2, 1] -> 1,
+      [2, 2] -> 2,
+      [2, 3] -> 1,
+      [3, 0] -> 3,
+      [3, 1] -> 1,
+      [3, 2] -> 1,
+      [3, 3] -> 3,
+    )
+    
+    """
+    assert '<=' in poset.relations
+
+    universe = poset.universe
+    upper_bounds = {x : set(y for y in universe 
+                            if [x,y] in poset.relations["<="]) 
+                    for x in universe}
+    lower_bounds = {x : set(y for y in universe 
+                            if [y,x] in poset.relations["<="]) 
+                    for x in universe}
+
+    @Operation_decorator(universe)
+    def meet(x,y):
+        lbs = lower_bounds[x].intersection(lower_bounds[y])
+        r = next(iter(lbs))
+        for z in lbs:
+            if [r,z] in poset.relations["<="]:
+                r = z
+        return r
+    
+    @Operation_decorator(universe)
+    def join(x,y):
+        ubs = upper_bounds[x].intersection(upper_bounds[y])
+        r = next(iter(ubs))
+        for z in ubs:
+            if [z,r] in poset.relations["<="]:
+                r = z
+        return r
+
+    return Lattice(
+        universe,
+        join,
+        meet
+        )
 
 if __name__ == "__main__":
     import doctest
