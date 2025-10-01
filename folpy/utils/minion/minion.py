@@ -8,13 +8,39 @@ import codecs
 import os
 import pickle
 import subprocess as sp
-from select import poll, POLLIN
+import select 
 from itertools import product
 from collections import defaultdict
 
 from ...semantics import Homomorphism, Embedding, Isomorphism
 from .. import misc
 
+# --- parche multiplataforma para poll ---
+try:
+    from select import poll, POLLIN
+except ImportError:
+    # Fallback para Windows
+    class FakePoll:
+        def __init__(self):
+            self.fds = {}
+
+        def register(self, fd, eventmask=None):
+            self.fds[fd] = True
+
+        def unregister(self, fd):
+            if fd in self.fds:
+                del self.fds[fd]
+
+        def poll(self, timeout=None):
+            rlist, _, _ = select.select(
+                list(self.fds.keys()), [], [],
+                None if timeout is None else timeout/1000.0
+            )
+            return [(fd, POLLIN) for fd in rlist]
+
+    poll = FakePoll
+    POLLIN = 1
+# --- fin del parche ---
 
 class MinionSol(object):
     count = 0
